@@ -69,7 +69,7 @@ class Arma3_PointsCloud:
 
         pub_context = zmq.Context()
         self.pcl_pub_socket = pub_context.socket(zmq.PUB)
-        self.pcl_pub_socket.bind(f"tcp://localhost:{self.zmq_pub_port}")
+        self.pcl_pub_socket.bind(f"tcp://127.0.0.1:{self.zmq_pub_port}")
 
         com_context = zmq.Context()
         self.com_socket = com_context.socket(zmq.SUB)

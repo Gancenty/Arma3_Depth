@@ -9,7 +9,7 @@ com_port = 5557
 
 context = zmq.Context()
 pub_socket = context.socket(zmq.PUB)
-pub_socket.bind(f"tcp://localhost:{pcl_pub_port}")
+pub_socket.bind(f"tcp://127.0.0.1:{pcl_pub_port}")
 
 context = zmq.Context()
 sub_socket = context.socket(zmq.SUB)
@@ -18,7 +18,7 @@ sub_socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
 context = zmq.Context()
 com_socket = context.socket(zmq.PUB)
-com_socket.bind(f"tcp://localhost:{com_port}")
+com_socket.bind(f"tcp://127.0.0.1:{com_port}")
 
 def send_message(message):
     """
