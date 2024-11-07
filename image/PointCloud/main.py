@@ -160,10 +160,9 @@ class Arma3_PointsCloud:
             except zmq.Again:
                 time.sleep(0.1)
 
-
 if __name__ == "__main__":
     pcl = Arma3_PointsCloud(
-        start_x=8600, start_y=18100, width=0, height=0, stride=5
+        start_x=8450, start_y=18750, width=0, height=0, stride=5
     )
     try:
         while True:
