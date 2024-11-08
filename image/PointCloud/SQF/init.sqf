@@ -1,9 +1,18 @@
+_start_scan = false;
+_new_mission = [];
+_target_pos = [0, 0, 0];
+_target_control = [0, 0, 0];
+
+object_class_map = createHashMap;
+next_class_num = 0;
+
+
 fuc_low_scan = {
 	params ["_center"];
 	private _cameraPos = _center; 		  // 摄像机位置 
 	private _horizontalFOV = 360;         // 水平视角（度）   
 	private _verticalFOV = 180;            // 垂直视角（度）   
-	private _angleResolution = 0.4;       // 角分辨率（度）   
+	private _angleResolution = 0.2;       // 角分辨率（度）   
 	private _maxDistance = 100;          
 	private _points_cnt = 0; 
 	private _intersections = [];   
@@ -23,6 +32,8 @@ fuc_low_scan = {
 			private _endPos = _cameraPos vectorAdd (_direction vectorMultiply _maxDistance); 
 			
 			_point_info = [];
+			_point_class_str = "";
+			_point_class = 0;
 			_min_points_info = [];
 			_min_distance = 999999;
 			
@@ -30,7 +41,18 @@ fuc_low_scan = {
 			if (count _result_fire > 0) then {
 				private _intersectionPos = (_result_fire select 0) select 0;   
 				private _intersectionPosNorm = (_result_fire select 0) select 1; 
-				_point_info = [_intersectionPos, _intersectionPosNorm];
+				private _intersectionClass = (_result_fire select 0) select 2;
+				_point_class_str = str _intersectionClass;
+				
+				if (_point_class_str in object_class_map) then {
+					_point_class = object_class_map get _point_class_str;
+				} else {
+					_point_class = next_class_num;
+					object_class_map set [_point_class_str, next_class_num];
+					next_class_num = next_class_num + 1;
+				};
+
+				_point_info = [_intersectionPos select 0, _intersectionPos select 1, _intersectionPos select 2, _intersectionPosNorm select 0, _intersectionPosNorm select 1,_intersectionPosNorm select 2, _point_class];
 				_distance = _cameraPos vectorDistance _intersectionPos;
 				if (_distance < _min_distance) then {
 					_min_distance = _distance;
@@ -43,7 +65,18 @@ fuc_low_scan = {
 			if (count _result_geom > 0) then {
 				private _intersectionPos = (_result_geom select 0) select 0;   
 				private _intersectionPosNorm = (_result_geom select 0) select 1; 
-				_point_info = [_intersectionPos, _intersectionPosNorm];
+				private _intersectionClass = (_result_geom select 0) select 2;
+				_point_class_str = str _intersectionClass;
+
+				if (_point_class_str in object_class_map) then {
+					_point_class = object_class_map get _point_class_str;
+				} else {
+					_point_class = next_class_num;
+					object_class_map set [_point_class_str, next_class_num];
+					next_class_num = next_class_num + 1;
+				};
+
+				_point_info = [_intersectionPos select 0, _intersectionPos select 1, _intersectionPos select 2, _intersectionPosNorm select 0, _intersectionPosNorm select 1,_intersectionPosNorm select 2, _point_class];
 				_distance = _cameraPos vectorDistance _intersectionPos;
 				if (_distance < _min_distance) then {
 					_min_distance = _distance;
@@ -73,8 +106,8 @@ fuc_high_scan = {
 	params ["_center"];
 	private _cameraPos = _center; 		  // 摄像机位置 
 	private _horizontalFOV = 360;         // 水平视角（度）   
-	private _verticalFOV = 75;            // 垂直视角（度）   
-	private _angleResolution = 0.4;       // 角分辨率（度）   
+	private _verticalFOV = 45;            // 垂直视角（度）   
+	private _angleResolution = 0.2;       // 角分辨率（度）   
 	private _maxDistance = 100;          
 	private _points_cnt = 0; 
 	private _intersections = [];   
@@ -94,6 +127,8 @@ fuc_high_scan = {
 			private _endPos = _cameraPos vectorAdd (_direction vectorMultiply _maxDistance); 
 			
 			_point_info = [];
+			_point_class_str = "";
+			_point_class = 0;
 			_min_points_info = [];
 			_min_distance = 999999;
 			
@@ -101,7 +136,18 @@ fuc_high_scan = {
 			if (count _result_fire > 0) then {
 				private _intersectionPos = (_result_fire select 0) select 0;   
 				private _intersectionPosNorm = (_result_fire select 0) select 1; 
-				_point_info = [_intersectionPos, _intersectionPosNorm];
+				private _intersectionClass = (_result_fire select 0) select 2;
+				_point_class_str = str _intersectionClass;
+
+				if (_point_class_str in object_class_map) then {
+					_point_class = object_class_map get _point_class_str;
+				} else {
+					_point_class = next_class_num;
+					object_class_map set [_point_class_str, next_class_num];
+					next_class_num = next_class_num + 1;
+				};
+
+				_point_info = [_intersectionPos select 0, _intersectionPos select 1, _intersectionPos select 2, _intersectionPosNorm select 0, _intersectionPosNorm select 1,_intersectionPosNorm select 2, _point_class];
 				_distance = _cameraPos vectorDistance _intersectionPos;
 				if (_distance < _min_distance) then {
 					_min_distance = _distance;
@@ -114,7 +160,18 @@ fuc_high_scan = {
 			if (count _result_geom > 0) then {
 				private _intersectionPos = (_result_geom select 0) select 0;   
 				private _intersectionPosNorm = (_result_geom select 0) select 1; 
-				_point_info = [_intersectionPos, _intersectionPosNorm];
+				private _intersectionClass = (_result_geom select 0) select 2;
+				_point_class_str = str _intersectionClass;
+
+				if (_point_class_str in object_class_map) then {
+					_point_class = object_class_map get _point_class_str;
+				} else {
+					_point_class = next_class_num;
+					object_class_map set [_point_class_str, next_class_num];
+					next_class_num = next_class_num + 1;
+				};
+
+				_point_info = [_intersectionPos select 0, _intersectionPos select 1, _intersectionPos select 2, _intersectionPosNorm select 0, _intersectionPosNorm select 1,_intersectionPosNorm select 2, _point_class];
 				_distance = _cameraPos vectorDistance _intersectionPos;
 				if (_distance < _min_distance) then {
 					_min_distance = _distance;
@@ -139,11 +196,8 @@ fuc_high_scan = {
 	_points_cnt
 };
 
-_start_scan = false;
-_new_mission = [];
+
 while {true} do {
-	_target_pos = [0, 0, 0];
-	_target_control = [0, 0, 0];
 	_new_mission = ["image.read_message", []] call py3_fnc_callExtension;
 	if (_new_mission select 0 == "Y") then {
 		_target_control = _new_mission select 1;
@@ -162,6 +216,7 @@ while {true} do {
 		sleep(0.1);
 
 		["image.send_com_message", ["Y"+str (_cnt1 + _cnt2)]] call py3_fnc_callExtension;
+		["image.send_com_message", ["I"+str (object_class_map)]] call py3_fnc_callExtension;
 	};
 	sleep(0.001);
 };
