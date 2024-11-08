@@ -3,6 +3,7 @@ import zmq
 import json
 import time
 import random
+import pickle
 import logging
 import threading
 import numpy as np
@@ -19,6 +20,7 @@ class Arma3_PointsCloud:
         stride=5,
         store_path="./PointsCloud",
         color_file_path="./color_dict.json",
+        object_file_path="./object_list.pkl"
     ):
         self.received_cnt = 0
         self.start_x = start_x
@@ -38,9 +40,11 @@ class Arma3_PointsCloud:
         self.data_lock = threading.Lock()
         self.store_path = store_path
         self.color_file_path = color_file_path
+        self.object_file_path = object_file_path
         self.color_dict = None
         self.object_list = None
 
+        self.load_object_list()
         self.load_color_dict()
         self.init_zmq()
         self.setup_logger()
@@ -55,6 +59,7 @@ class Arma3_PointsCloud:
                 self.color_dict = color_dict
         else:
             self.color_dict = {}
+            self.save_color_dict()
 
     def save_color_dict(self):
         color_dict_str_keys = {str(k): v for k, v in self.color_dict.items()}
@@ -70,6 +75,22 @@ class Arma3_PointsCloud:
                     break
         return self.color_dict[index]
 
+    def load_object_list(self):
+        if os.path.exists(self.object_file_path):
+            with open(self.object_file_path, "rb") as file:
+                self.object_list = pickle.load(file)
+        else:
+            self.object_list = []
+            self.save_object_list()
+    
+    def save_object_list(self):
+        with open(self.object_file_path, "wb") as file:
+            pickle.dump(self.object_list, file)
+    
+    def create_mapping_json(self):
+        if len(self.object_list) > 0 and len(self.color_dict) > 0:
+            pass
+    
     def setup_logger(self, log_file="app.log", log_level=logging.INFO):
         logger = logging.getLogger("Logger")
         logger.setLevel(log_level)
@@ -203,10 +224,8 @@ class Arma3_PointsCloud:
                             )
                     if data[0] == "I":
                         self.object_list = eval(data[1:])
-                        print(self.object_list)
-                        with open("my_list.txt", "w") as file:
-                            file.write(str(self.object_list))
-
+                        self.save_object_list()
+                        
             except zmq.Again:
                 time.sleep(0.1)
 
