@@ -153,15 +153,15 @@ while {true} do {
 	if (_start_scan) then {
 		_start_scan = false;
 
-		// _target_pos = ATLToASL([_target_control select 0, _target_control select 1, 3]);
-		// _cnt = [_target_pos] call fnc_low_scan;
-		// sleep(0.1);
-
-		_target_pos = ATLToASL([_target_control select 0, _target_control select 1, 20]);
-		_cnt = [_target_pos] call fuc_high_scan;
+		_target_pos = ATLToASL([_target_control select 0, _target_control select 1, 3]);
+		_cnt1 = [_target_pos] call fuc_low_scan;
 		sleep(0.1);
 
-		["image.send_com_message", ["Y"+str (_cnt)]] call py3_fnc_callExtension;
+		_target_pos = ATLToASL([_target_control select 0, _target_control select 1, 20]);
+		_cnt2 = [_target_pos] call fuc_high_scan;
+		sleep(0.1);
+
+		["image.send_com_message", ["Y"+str (_cnt1 + _cnt2)]] call py3_fnc_callExtension;
 	};
 	sleep(0.001);
 };

@@ -2,26 +2,26 @@ import open3d as o3d
 import numpy as np
 
 # 加载点云文件
-pcd = o3d.io.read_point_cloud(r"D:\Gancenty\Desktop\total.ply")  # 替换成你的文件路径
+pcd = o3d.io.read_point_cloud(r"total-0.04.ply")  # 替换成你的文件路径
+a = pcd.clo
+# # 设置稀疏采样的步长，例如每隔100个点保留一个点
+# # sampling_step = 50
+# # pcd_downsampled = pcd.uniform_down_sample(sampling_step)
 
-# 设置稀疏采样的步长，例如每隔100个点保留一个点
-sampling_step = 50
-pcd_downsampled = pcd.uniform_down_sample(sampling_step)
+# # 设置点云显示的点大小
+# vis = o3d.visualization.Visualizer()
+# vis.create_window()
 
-# 设置点云显示的点大小
-vis = o3d.visualization.Visualizer()
-vis.create_window()
+# # 添加点云
+# vis.add_geometry(pcd)
 
-# 添加点云
-vis.add_geometry(pcd_downsampled)
+# # 设置点大小
+# opt = vis.get_render_option()
+# opt.point_size = 7  # 这里设置点的大小为 5，你可以根据需要调整
 
-# 设置点大小
-opt = vis.get_render_option()
-opt.point_size = 7  # 这里设置点的大小为 5，你可以根据需要调整
-
-# 开始可视化
-vis.run()
-vis.destroy_window()
+# # 开始可视化
+# vis.run()
+# vis.destroy_window()
 
 # # 定义观察点和方向
 # view_point = np.array([8600, 18100, 182])  # 观察点的坐标，替换为你希望的值
@@ -55,4 +55,4 @@ vis.destroy_window()
 
 # 可视化
 
-# o3d.visualization.draw_geometries([pcd])
+o3d.visualization.draw_geometries([pcd])

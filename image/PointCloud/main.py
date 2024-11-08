@@ -1,6 +1,8 @@
 import os
 import zmq
+import json
 import time
+import random
 import logging
 import threading
 import numpy as np
@@ -16,6 +18,7 @@ class Arma3_PointsCloud:
         height=100,
         stride=5,
         store_path="./PointsCloud",
+        color_file_path="./color_dict.json",
     ):
         self.received_cnt = 0
         self.start_x = start_x
@@ -34,11 +37,38 @@ class Arma3_PointsCloud:
         self.now_coord_index = 0
         self.data_lock = threading.Lock()
         self.store_path = store_path
+        self.color_file_path = color_file_path
+        self.color_dict = None
+        self.object_list = None
 
+        self.load_color_dict()
         self.init_zmq()
         self.setup_logger()
         self.init_open3d()
         self.start_thread()
+
+    def load_color_dict(self):
+        if os.path.exists(self.color_file_path):
+            with open(self.color_file_path, "r") as file:
+                color_dict = json.load(file)
+                color_dict = {int(k): v for k, v in color_dict.items()}
+                self.color_dict = color_dict
+        else:
+            self.color_dict = {}
+
+    def save_color_dict(self):
+        color_dict_str_keys = {str(k): v for k, v in self.color_dict.items()}
+        with open(self.color_file_path, "w") as file:
+            json.dump(color_dict_str_keys, file)
+
+    def get_unique_color(self, index):
+        if index not in self.color_dict:
+            while True:
+                color = [random.randint(0, 255) for _ in range(3)]
+                if color not in self.color_dict.values():
+                    self.color_dict[index] = color
+                    break
+        return self.color_dict[index]
 
     def setup_logger(self, log_file="app.log", log_level=logging.INFO):
         logger = logging.getLogger("Logger")
@@ -105,22 +135,37 @@ class Arma3_PointsCloud:
                     self.latest_msg = self.pcl_sub_socket.recv()
 
                     rec_data = np.frombuffer(self.latest_msg, dtype=np.float32)
-                    rec_data = rec_data.reshape(-1, 6)
+                    rec_data = rec_data.reshape(-1, 7)
                     points = rec_data[:, :3]
                     normals = rec_data[:, 3:6]
+                    colors_class = rec_data[:, 6].astype(int)
 
                     if points.shape[0] == 0:
                         print("no points cloud")
                         continue
 
+                    colors = (
+                        np.array(
+                            [
+                                self.get_unique_color(class_id)
+                                for class_id in colors_class
+                            ]
+                        )
+                        / 255
+                    )
+                    self.save_color_dict()
+
                     current_points = np.asarray(self.point_cloud.points)
                     current_normals = np.asarray(self.point_cloud.normals)
+                    current_colors = np.asarray(self.point_cloud.colors)
 
                     all_points = np.vstack((current_points, points))
                     all_normals = np.vstack((current_normals, normals))
+                    all_colors = np.vstack((current_colors, colors))
 
                     self.point_cloud.points = o3d.utility.Vector3dVector(all_points)
                     self.point_cloud.normals = o3d.utility.Vector3dVector(all_normals)
+                    self.point_cloud.colors = o3d.utility.Vector3dVector(all_colors)
 
                     with self.data_lock:
                         self.received_cnt += rec_data.shape[0]
@@ -156,13 +201,27 @@ class Arma3_PointsCloud:
                             self.pcl_pub_socket.send_string(
                                 str(self.grid_points[self.now_coord_index].tolist())
                             )
+                    if data[0] == "I":
+                        self.object_list = eval(data[1:])
+                        print(self.object_list)
+                        with open("my_list.txt", "w") as file:
+                            file.write(str(self.object_list))
 
             except zmq.Again:
                 time.sleep(0.1)
 
+
 if __name__ == "__main__":
+    points_cloud_store_path = r"./PointsCloud"
+    color_file_path = "./color_dict.json"
     pcl = Arma3_PointsCloud(
-        start_x=8450, start_y=18750, width=0, height=0, stride=5
+        start_x=8650,
+        start_y=18250,
+        width=20,
+        height=20,
+        stride=10,
+        store_path=points_cloud_store_path,
+        color_file_path=color_file_path,
     )
     try:
         while True:
