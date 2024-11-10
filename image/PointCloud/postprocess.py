@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import pickle
 from tqdm import tqdm
@@ -14,9 +15,9 @@ def refine_point_cloud(points, voxel_size=0.01):
 
 
 def wipe_out_point_cloud(
-    input_folder, output_folder, x, y, width, height, reserved=5, rectify=False
+    input_path, output_path, x, y, width, height, reserved=5, rectify=False
 ):
-    folder_path = input_folder
+    folder_path = input_path
     x_min = x - reserved
     y_min = y - reserved
     x_max = x + width + reserved * 2
@@ -48,35 +49,40 @@ def wipe_out_point_cloud(
             filtered_pcd.points = o3d.utility.Vector3dVector(filtered_points)
             filtered_pcd.normals = o3d.utility.Vector3dVector(filtered_normals)
 
-            output_path = os.path.join(output_folder, filename)
-            o3d.io.write_point_cloud(output_path, filtered_pcd)
+            output_file = os.path.join(output_path, filename)
+            o3d.io.write_point_cloud(output_file, filtered_pcd)
         else:
-            output_path = os.path.join(output_folder, filename)
-            o3d.io.write_point_cloud(output_path, pcd)
+            output_file = os.path.join(output_path, filename)
+            o3d.io.write_point_cloud(output_file, pcd)
 
 
-def merge_all_point_cloud(folder):
-    folder_path = folder
+def merge_point_cloud(input_path, output_path):
+    folder_path = input_path
     total_pcd = o3d.geometry.PointCloud()
     ply_files = [
         filename for filename in os.listdir(folder_path) if filename.endswith(".ply")
     ]
+    ply_files.sort()
     cnt = 0
-    for filename in tqdm(ply_files, desc="Processing .ply files"):
+    for index, filename in enumerate(tqdm(ply_files, desc="Processing .ply files")):
         file_path = os.path.join(folder_path, filename)
         pcd = o3d.io.read_point_cloud(file_path)
         total_pcd = total_pcd + pcd
         if (cnt % 100) == 0:
             total_pcd = refine_point_cloud(total_pcd)
-            print("refined")
+            output_file_name = file_path = os.path.join(
+                output_path, f"merged-{cnt}.ply"
+            )
+            o3d.io.write_point_cloud(output_file_name, total_pcd)
+            print(f"Refined: Index:{index}-FileName:{filename}")
         cnt += 1
+    total_pcd = refine_point_cloud(total_pcd)
+    output_file_name = file_path = os.path.join(folder_path, f"merged.ply")
+    o3d.io.write_point_cloud(output_file_name, total_pcd)
 
-    output_path = f"./Filted/total.ply"
-    o3d.io.write_point_cloud(output_path, total_pcd)
 
-
-def test_point_cloud(folder):
-    folder_path = folder
+def test_point_cloud(input_path):
+    folder_path = input_path
     ply_files = [
         filename for filename in os.listdir(folder_path) if filename.endswith(".ply")
     ]
@@ -87,12 +93,10 @@ def test_point_cloud(folder):
         print(arr.shape)
 
 
-def voxel_point_cloud(path, filename, voxel_size):
-    file_path = os.path.join(path, filename)
-    output_path = os.path.join(path, "total-" + str(voxel_size) + ".ply")
-    points = o3d.io.read_point_cloud(file_path)
+def voxel_point_cloud(input_file, output_file, voxel_size):
+    points = o3d.io.read_point_cloud(input_file)
     points = points.voxel_down_sample(voxel_size)
-    o3d.io.write_point_cloud(output_path, points)
+    o3d.io.write_point_cloud(output_file, points)
 
 
 def wipe_out_height(path_name, file_name, z_min, z_max):
@@ -145,7 +149,7 @@ def load_color_dict(file_path):
         with open(file_path, "r") as file:
             color_dict = json.load(file)
             color_dict = {int(k): v for k, v in color_dict.items()}
-            print("Color_Len:%d"%len(color_dict))
+            print("Color_Len:%d" % len(color_dict))
             return color_dict
     else:
         return None
@@ -155,7 +159,7 @@ def load_object_list(file_path, output_path):
     if os.path.exists(file_path):
         with open(file_path, "rb") as file:
             object_list = pickle.load(file)
-            print("Object_Len:%d"%len(object_list))
+            print("Object_Len:%d" % len(object_list))
             with open(output_path, "w") as out_file:
                 for item in object_list:
                     out_file.write(f"{item}\n")
@@ -163,10 +167,12 @@ def load_object_list(file_path, output_path):
     else:
         return None
 
-def rgb_to_hex(rgb):
-        return "#{:02X}{:02X}{:02X}".format(rgb[0], rgb[1], rgb[2])
 
-def build_refer_dict(color_dict, object_list, store_file_path):
+def rgb_to_hex(rgb):
+    return "#{:02X}{:02X}{:02X}".format(rgb[0], rgb[1], rgb[2])
+
+
+def build_refer_json(color_dict, object_list, store_file_path):
     if color_dict is None or object_list is None:
         print("Failed to load color_dict or object_list")
         return
@@ -174,8 +180,8 @@ def build_refer_dict(color_dict, object_list, store_file_path):
     for object, index in object_list:
         if index in color_dict:
             color = color_dict[index]
-            normalize_color = [rgb/255.0 for rgb in color]
-            restore_color = [rgb*255 for rgb in normalize_color]
+            normalize_color = [rgb / 255.0 for rgb in color]
+            restore_color = [rgb * 255 for rgb in normalize_color]
             info_dict = {}
             info_dict["color"] = color
             info_dict["normalize_color"] = normalize_color
@@ -185,46 +191,93 @@ def build_refer_dict(color_dict, object_list, store_file_path):
             ref_dict[rgb_to_hex(color)] = info_dict
         else:
             print(f"{object} and {index} is not in color_dict")
-    with open(store_file_path,"w") as file:
+    with open(store_file_path, "w") as file:
         json.dump(ref_dict, file, sort_keys=True, indent=4)
+
 
 def points_color_merge(file_name):
     pass
 
+
 def color_to_object(points_color, ref_dict: dict):
-    restore_color = [int(rgb*255) for rgb in points_color]
+    restore_color = [int(rgb * 255) for rgb in points_color]
     hex_color_str = rgb_to_hex(restore_color)
     if hex_color_str in ref_dict.keys():
-        print(ref_dict[hex_color_str]["object"])
+        # print(ref_dict[hex_color_str]["object"])
+        return True
+    else:
+        print("Failed:", hex_color_str)
+        return False
+
 
 def open_ply_files(file_name):
     pcd = o3d.io.read_point_cloud(file_name)
     return pcd
 
-def load_json_file(file_name):
+
+def setup_logger(log_file="postprocess.log", log_level=logging.INFO):
+    logger = logging.getLogger("Logger")
+    logger.setLevel(log_level)
+
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setLevel(log_level)
+
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    return logger
+
+
+def load_ref_json_file(file_name):
     if os.path.exists(file_name):
         with open(file_name, "r") as file:
             color_dict = json.load(file)
-            print("Color_Len:%d"%len(color_dict))
+            print("Color_Len:%d" % len(color_dict))
             return color_dict
     else:
         return None
 
+
+def test_color_mapping(input_path, ref_json):
+    folder_path = input_path
+    ply_files = [
+        filename for filename in os.listdir(folder_path) if filename.endswith(".ply")
+    ]
+    fail_cnt = 0
+    for filename in tqdm(ply_files, desc="Processing .ply files"):
+        file_path = os.path.join(folder_path, filename)
+        pcd = o3d.io.read_point_cloud(file_path)
+        color = np.asarray(pcd.colors)
+        for i in range(len(color)):
+            ans = color_to_object(color[i], ref_json)
+            if ans == False:
+                fail_cnt += 1
+        if fail_cnt:
+            logger.error(f"{filename} Failed_cnt:{fail_cnt}")
+        else:
+            logger.info(f"{filename} Failed_cnt:{fail_cnt}")
+
+
+logger = setup_logger()
+
 work_dir = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored"
 output_dir = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Filted"
 
-path_name = r"D:\Gancenty\Desktop"
-file_name = "total-0.1.ply"
+in_path_name = r"D:\Gancenty\Desktop"
+in_file_name = "total-0.1.ply"
 
-ref_json = load_json_file("./ref.json")
-pcd = open_ply_files(r"D:\Gancenty\Desktop\[8800-18210].ply")
-color = np.asarray(pcd.colors)
-for i in range(10):
-    print(color_to_object(color[i],ref_json))
+out_path_name = ""
+out_file_name = ""
 
-# color_dict = load_color_dict("color_dict.json")
-# object_list = load_object_list("object_list.pkl","1.txt")
-# build_refer_dict(color_dict=color_dict, object_list=object_list, store_file_path="./ref.json")
+# ref_json = load_ref_json_file("./ref.json")
+# test_color_mapping(work_dir, ref_json)
+
+
+color_dict = load_color_dict("color_dict.json")
+object_list = load_object_list("object_list.pkl","1.txt")
+build_refer_json(color_dict=color_dict, object_list=object_list, store_file_path="./ref.json")
 
 # merge_two_point_cloud_file(r"F:\Arma3\PointsCloud\Arma3_Forest\1\PointsCloud",r"F:\Arma3\PointsCloud\Arma3_Forest\1\Add")
 # wipe_out_height(path_name, file_name, 0, 250)
