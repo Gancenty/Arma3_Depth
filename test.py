@@ -3,7 +3,7 @@ import pywt
 import matplotlib.pyplot as plt
 
 # 示例时间序列，包含0-1-0的结构
-time_series = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+time_series = np.array([0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1])
 
 # 1. 进行小波变换（DWT）
 # 使用 'db1'（Daubechies 1）小波，适合二值序列的简单特征分析
@@ -15,7 +15,8 @@ for i in coeffs:
     print(i.shape)
 # 2. 查看不同尺度下的系数，识别长时间保持1的结构
 plt.figure(figsize=(12, 8))
-
+sustained_score = np.sum(np.square(cA3)) / (np.sum(np.square(cA3)) + np.sum(np.square(cD3)) + np.sum(np.square(cD2)) + np.sum(np.square(cD1)))
+print(sustained_score)
 plt.subplot(5, 1, 1)
 plt.scatter(range(len(time_series)),time_series, label='Original Time Series')
 plt.legend()

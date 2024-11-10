@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 import pickle
 from tqdm import tqdm
 import numpy as np
@@ -177,20 +178,27 @@ def build_refer_json(color_dict, object_list, store_file_path):
         print("Failed to load color_dict or object_list")
         return
     ref_dict = {}
-    for object, index in object_list:
+    for object_info, index in object_list:
         if index in color_dict:
             color = color_dict[index]
             normalize_color = [rgb / 255.0 for rgb in color]
             restore_color = [rgb * 255 for rgb in normalize_color]
+            match = re.search(r"\b\w+\.p3d\b", object_info)
+            if match:
+                object_name = match.group(0).split(".")[0]
+            else:
+                object_name = object_info
+
             info_dict = {}
             info_dict["color"] = color
             info_dict["normalize_color"] = normalize_color
             info_dict["restore_color"] = restore_color
             info_dict["index"] = index
-            info_dict["object"] = object
+            info_dict["object"] = object_info
+            info_dict["object_name"] = object_name
             ref_dict[rgb_to_hex(color)] = info_dict
         else:
-            print(f"{object} and {index} is not in color_dict")
+            print(f"{object_info} and {index} is not in color_dict")
     with open(store_file_path, "w") as file:
         json.dump(ref_dict, file, sort_keys=True, indent=4)
 
@@ -203,8 +211,7 @@ def color_to_object(points_color, ref_dict: dict):
     restore_color = [int(rgb * 255) for rgb in points_color]
     hex_color_str = rgb_to_hex(restore_color)
     if hex_color_str in ref_dict.keys():
-        # print(ref_dict[hex_color_str]["object"])
-        return True
+        return ref_dict[hex_color_str]["object_name"]
     else:
         print("Failed:", hex_color_str)
         return False
@@ -260,6 +267,48 @@ def test_color_mapping(input_path, ref_json):
             logger.info(f"{filename} Failed_cnt:{fail_cnt}")
 
 
+def process_object_list(file_path, output_path):
+    unique_object = dict()
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as file:
+            object_list = pickle.load(file)
+            print("Object_Len:%d" % len(object_list))
+            for item, index in object_list:
+                match = re.search(r"\b\w+\.p3d\b", item)
+                if match:
+                    object_name = match.group(0).split(".")[0]
+                    if object_name not in unique_object.keys():
+                        unique_object[object_name] = index
+                else:
+                    unique_object[item] = index
+        with open(output_path, "w") as out_file:
+            json.dump(unique_object, out_file, sort_keys=True, indent=4)
+        return unique_object
+
+
+def refine_colored_point_cloud(
+    input_path, output_path, color_dict, color_info, unique_object
+):
+    folder_path = input_path
+    ply_files = [
+        filename for filename in os.listdir(folder_path) if filename.endswith(".ply")
+    ]
+    for index, filename in enumerate(tqdm(ply_files, desc="Processing .ply files")):
+        file_path = os.path.join(folder_path, filename)
+        pcd = o3d.io.read_point_cloud(file_path)
+        color = np.asarray(pcd.colors)
+        for i, item in enumerate((tqdm(color, desc="Processing .ply files"))):
+            object_name = color_to_object(color[i], color_info)
+            if object_name != False:
+                color_index = unique_object[object_name]
+                color[i] = np.array(color_dict[str(color_index)]) / 255.0
+            else:
+                print("ERROR!")
+        pcd.colors = o3d.utility.Vector3dVector(color)
+        file_path = os.path.join(output_path, filename)
+        o3d.io.write_point_cloud(file_path, pcd)
+
+
 logger = setup_logger()
 
 work_dir = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored"
@@ -271,13 +320,24 @@ in_file_name = "total-0.1.ply"
 out_path_name = ""
 out_file_name = ""
 
-# ref_json = load_ref_json_file("./ref.json")
+color_info_json = load_ref_json_file("color_info.json")
+color_json = load_ref_json_file("color_dict.json")
+object_json = load_ref_json_file("unique_object_json.json")
+
+refine_colored_point_cloud(
+    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored",
+    r"Filted/",
+    color_json,
+    color_info_json,
+    object_json,
+)
 # test_color_mapping(work_dir, ref_json)
 
+# process_object_list("object_list.pkl", "unique_object_json.json")
 
-color_dict = load_color_dict("color_dict.json")
-object_list = load_object_list("object_list.pkl","1.txt")
-build_refer_json(color_dict=color_dict, object_list=object_list, store_file_path="./ref.json")
+# color_dict = load_color_dict("color_dict.json")
+# object_list = load_object_list("object_list.pkl","1.txt")
+# build_refer_json(color_dict=color_dict, object_list=object_list, store_file_path="./color_info.json")
 
 # merge_two_point_cloud_file(r"F:\Arma3\PointsCloud\Arma3_Forest\1\PointsCloud",r"F:\Arma3\PointsCloud\Arma3_Forest\1\Add")
 # wipe_out_height(path_name, file_name, 0, 250)
