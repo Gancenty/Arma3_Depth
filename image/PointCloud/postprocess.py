@@ -11,6 +11,10 @@ import open3d as o3d
 def refine_point_cloud(points, voxel_size=0.01):
     points = points.remove_non_finite_points()
     points = points.remove_duplicated_points()
+    return points
+
+
+def voxel_down_sample(points, voxel_size):
     points = points.voxel_down_sample(voxel_size)
     return points
 
