@@ -225,22 +225,28 @@ class Arma3_PointsCloud:
                     if data[0] == "I":
                         self.object_list = eval(data[1:])
                         self.save_object_list()
+                        self.logger.info(
+                            "Color_Len:%d,Object_Len:%d,Now:%d,Total:%d"
+                            % (len(self.color_dict), len(self.object_list),pcl.now_coord_index + 1, len(pcl.grid_points))
+                        )
                         
             except zmq.Again:
                 time.sleep(0.1)
 
 
 if __name__ == "__main__":
-    points_cloud_store_path = r"./PointsCloud"
+    points_cloud_store_path = r"D:\Arma3_PointsCloud\Colored"
     color_file_path = "./color_dict.json"
+    object_file_path="./object_list.pkl"
     pcl = Arma3_PointsCloud(
-        start_x=8650,
-        start_y=18250,
-        width=20,
-        height=20,
+        start_x=8500,
+        start_y=18100,
+        width=300,
+        height=300,
         stride=10,
         store_path=points_cloud_store_path,
         color_file_path=color_file_path,
+        object_file_path=object_file_path
     )
     try:
         while True:

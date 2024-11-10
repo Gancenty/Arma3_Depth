@@ -1,4 +1,6 @@
+import json
 import os
+import pickle
 from tqdm import tqdm
 import numpy as np
 import open3d as o3d
@@ -132,15 +134,40 @@ def merge_two_point_cloud_file(folder1, folder2):
         output_path = f"./1/{filename}"
         o3d.io.write_point_cloud(output_path, total_pcd)
 
+def load_color_dict(file_path):
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            color_dict = json.load(file)
+            color_dict = {int(k): v for k, v in color_dict.items()}
+            return color_dict
+    else:
+        return None
+
+
+def load_object_list(file_path, output_path):
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as file:
+            object_list = pickle.load(file)
+            with open(output_path, "w") as out_file:
+                for item in object_list:
+                    out_file.write(f"{item}\n")
+            return object_list
+    else:
+        return None
+
 
 work_dir = r"F:\Arma3\PointsCloud\Arma3_Forest\3\PointsCloud"
 output_dir = r"F:\Arma3\PointsCloud\Arma3_Forest\3\Origin_Filted"
 path_name = "./"
 file_name = "total.ply"
-
+a = load_object_list("object_list.pkl","1.txt")
+b = load_color_dict("color_dict.json")
+for i in a:
+    if i[1] not in b.keys():
+        print(i)
 # merge_two_point_cloud_file(r"F:\Arma3\PointsCloud\Arma3_Forest\1\PointsCloud",r"F:\Arma3\PointsCloud\Arma3_Forest\1\Add")
 # wipe_out_height(path_name, file_name, 0, 250)
 # voxel_point_cloud(path_name, file_name, 0.04)
 # test_point_cloud(r"./Filted")
-wipe_out_point_cloud(work_dir, output_dir, 8450, 18750, 100, 100, rectify=False)
+# wipe_out_point_cloud(work_dir, output_dir, 8450, 18750, 100, 100, rectify=False)
 # merge_point_cloud("./Filted")

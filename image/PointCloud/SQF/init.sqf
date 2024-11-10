@@ -33,8 +33,8 @@ fuc_low_scan = {
 			
 			_point_info = [];
 			_point_class_str = "";
-			_point_class = 0;
 			_min_points_info = [];
+			_min_point_class_str = "";
 			_min_distance = 999999;
 			
 			private _result_fire = lineIntersectsSurfaces [_cameraPos, _endPos, player, objNull, true, 1, "VIEW", "FIRE"];
@@ -43,20 +43,13 @@ fuc_low_scan = {
 				private _intersectionPosNorm = (_result_fire select 0) select 1; 
 				private _intersectionClass = (_result_fire select 0) select 2;
 				_point_class_str = str _intersectionClass;
-				
-				if (_point_class_str in object_class_map) then {
-					_point_class = object_class_map get _point_class_str;
-				} else {
-					_point_class = next_class_num;
-					object_class_map set [_point_class_str, next_class_num];
-					next_class_num = next_class_num + 1;
-				};
 
-				_point_info = [_intersectionPos select 0, _intersectionPos select 1, _intersectionPos select 2, _intersectionPosNorm select 0, _intersectionPosNorm select 1,_intersectionPosNorm select 2, _point_class];
+				_point_info = [_intersectionPos select 0, _intersectionPos select 1, _intersectionPos select 2, _intersectionPosNorm select 0, _intersectionPosNorm select 1,_intersectionPosNorm select 2, 0];
 				_distance = _cameraPos vectorDistance _intersectionPos;
 				if (_distance < _min_distance) then {
 					_min_distance = _distance;
 					_min_points_info = _point_info;
+					_min_point_class_str = _point_class_str;
 				};
 			}; 
 			
@@ -68,24 +61,26 @@ fuc_low_scan = {
 				private _intersectionClass = (_result_geom select 0) select 2;
 				_point_class_str = str _intersectionClass;
 
-				if (_point_class_str in object_class_map) then {
-					_point_class = object_class_map get _point_class_str;
-				} else {
-					_point_class = next_class_num;
-					object_class_map set [_point_class_str, next_class_num];
-					next_class_num = next_class_num + 1;
-				};
-
-				_point_info = [_intersectionPos select 0, _intersectionPos select 1, _intersectionPos select 2, _intersectionPosNorm select 0, _intersectionPosNorm select 1,_intersectionPosNorm select 2, _point_class];
+				_point_info = [_intersectionPos select 0, _intersectionPos select 1, _intersectionPos select 2, _intersectionPosNorm select 0, _intersectionPosNorm select 1,_intersectionPosNorm select 2, 0];
 				_distance = _cameraPos vectorDistance _intersectionPos;
 				if (_distance < _min_distance) then {
 					_min_distance = _distance;
 					_min_points_info = _point_info;
+					_min_point_class_str = _point_class_str;
 				};
 			};
 			
 			if (count _min_points_info > 0)  then { 
-				_points_cnt = _points_cnt + 1;   
+				_points_cnt = _points_cnt + 1;
+				_min_point_class = 0;
+				if (_min_point_class_str in object_class_map) then {
+					_min_point_class = object_class_map get _min_point_class_str;
+				} else {
+					_min_point_class = next_class_num;
+					object_class_map set [_min_point_class_str, next_class_num];
+					next_class_num = next_class_num + 1;
+				};   
+				_min_points_info set [6, _min_point_class];
 				_intersections pushBack _min_points_info;  
 			}; 
 			if (count _intersections > 100000) then {  
@@ -128,8 +123,8 @@ fuc_high_scan = {
 			
 			_point_info = [];
 			_point_class_str = "";
-			_point_class = 0;
 			_min_points_info = [];
+			_min_point_class_str = "";
 			_min_distance = 999999;
 			
 			private _result_fire = lineIntersectsSurfaces [_cameraPos, _endPos, player, objNull, true, 1, "VIEW", "FIRE"];
@@ -139,19 +134,12 @@ fuc_high_scan = {
 				private _intersectionClass = (_result_fire select 0) select 2;
 				_point_class_str = str _intersectionClass;
 
-				if (_point_class_str in object_class_map) then {
-					_point_class = object_class_map get _point_class_str;
-				} else {
-					_point_class = next_class_num;
-					object_class_map set [_point_class_str, next_class_num];
-					next_class_num = next_class_num + 1;
-				};
-
-				_point_info = [_intersectionPos select 0, _intersectionPos select 1, _intersectionPos select 2, _intersectionPosNorm select 0, _intersectionPosNorm select 1,_intersectionPosNorm select 2, _point_class];
+				_point_info = [_intersectionPos select 0, _intersectionPos select 1, _intersectionPos select 2, _intersectionPosNorm select 0, _intersectionPosNorm select 1,_intersectionPosNorm select 2, 0];
 				_distance = _cameraPos vectorDistance _intersectionPos;
 				if (_distance < _min_distance) then {
 					_min_distance = _distance;
 					_min_points_info = _point_info;
+					_min_point_class_str = _point_class_str;
 				};
 			}; 
 			
@@ -163,24 +151,26 @@ fuc_high_scan = {
 				private _intersectionClass = (_result_geom select 0) select 2;
 				_point_class_str = str _intersectionClass;
 
-				if (_point_class_str in object_class_map) then {
-					_point_class = object_class_map get _point_class_str;
-				} else {
-					_point_class = next_class_num;
-					object_class_map set [_point_class_str, next_class_num];
-					next_class_num = next_class_num + 1;
-				};
-
-				_point_info = [_intersectionPos select 0, _intersectionPos select 1, _intersectionPos select 2, _intersectionPosNorm select 0, _intersectionPosNorm select 1,_intersectionPosNorm select 2, _point_class];
+				_point_info = [_intersectionPos select 0, _intersectionPos select 1, _intersectionPos select 2, _intersectionPosNorm select 0, _intersectionPosNorm select 1,_intersectionPosNorm select 2, 0];
 				_distance = _cameraPos vectorDistance _intersectionPos;
 				if (_distance < _min_distance) then {
 					_min_distance = _distance;
 					_min_points_info = _point_info;
+					_min_point_class_str = _point_class_str;
 				};
 			};
 			
 			if (count _min_points_info > 0)  then { 
-				_points_cnt = _points_cnt + 1;   
+				_points_cnt = _points_cnt + 1;
+				_min_point_class = 0;
+				if (_min_point_class_str in object_class_map) then {
+					_min_point_class = object_class_map get _min_point_class_str;
+				} else {
+					_min_point_class = next_class_num;
+					object_class_map set [_min_point_class_str, next_class_num];
+					next_class_num = next_class_num + 1;
+				};   
+				_min_points_info set [6, _min_point_class];
 				_intersections pushBack _min_points_info;  
 			}; 
 			if (count _intersections > 100000) then {  
