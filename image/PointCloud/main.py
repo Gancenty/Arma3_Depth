@@ -20,7 +20,7 @@ class Arma3_PointsCloud:
         stride=5,
         store_path="./PointsCloud",
         color_file_path="./color_dict.json",
-        object_file_path="./object_list.pkl"
+        object_file_path="./object_list.pkl",
     ):
         self.received_cnt = 0
         self.start_x = start_x
@@ -64,7 +64,7 @@ class Arma3_PointsCloud:
     def save_color_dict(self):
         color_dict_str_keys = {str(k): v for k, v in self.color_dict.items()}
         with open(self.color_file_path, "w") as file:
-            json.dump(color_dict_str_keys, file)
+            json.dump(color_dict_str_keys, file, sort_keys=True, indent=4)
 
     def get_unique_color(self, index):
         if index not in self.color_dict:
@@ -82,15 +82,15 @@ class Arma3_PointsCloud:
         else:
             self.object_list = []
             self.save_object_list()
-    
+
     def save_object_list(self):
         with open(self.object_file_path, "wb") as file:
             pickle.dump(self.object_list, file)
-    
+
     def create_mapping_json(self):
         if len(self.object_list) > 0 and len(self.color_dict) > 0:
             pass
-    
+
     def setup_logger(self, log_file="app.log", log_level=logging.INFO):
         logger = logging.getLogger("Logger")
         logger.setLevel(log_level)
@@ -227,9 +227,14 @@ class Arma3_PointsCloud:
                         self.save_object_list()
                         self.logger.info(
                             "Color_Len:%d,Object_Len:%d,Now:%d,Total:%d"
-                            % (len(self.color_dict), len(self.object_list),pcl.now_coord_index + 1, len(pcl.grid_points))
+                            % (
+                                len(self.color_dict),
+                                len(self.object_list),
+                                pcl.now_coord_index + 1,
+                                len(pcl.grid_points),
+                            )
                         )
-                        
+
             except zmq.Again:
                 time.sleep(0.1)
 
@@ -237,7 +242,7 @@ class Arma3_PointsCloud:
 if __name__ == "__main__":
     points_cloud_store_path = r"D:\Arma3_PointsCloud\Colored"
     color_file_path = "./color_dict.json"
-    object_file_path="./object_list.pkl"
+    object_file_path = "./object_list.pkl"
     pcl = Arma3_PointsCloud(
         start_x=8500,
         start_y=18100,
@@ -246,7 +251,7 @@ if __name__ == "__main__":
         stride=10,
         store_path=points_cloud_store_path,
         color_file_path=color_file_path,
-        object_file_path=object_file_path
+        object_file_path=object_file_path,
     )
     try:
         while True:
