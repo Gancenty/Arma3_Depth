@@ -165,14 +165,12 @@ class Arma3_PointsCloud:
                         print("no points cloud")
                         continue
 
-                    colors = (
-                        np.array(
-                            [
-                                self.get_unique_color(class_id)
-                                for class_id in colors_class
-                            ]
-                        )
-                        / 255
+                    colors = np.array(
+                        [
+                            np.array(self.get_unique_color(class_id), dtype=np.float32)
+                            / 255.0
+                            for class_id in colors_class
+                        ]
                     )
                     self.save_color_dict()
 
@@ -240,14 +238,14 @@ class Arma3_PointsCloud:
 
 
 if __name__ == "__main__":
-    points_cloud_store_path = r"D:\Arma3_PointsCloud\Colored"
+    points_cloud_store_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Forest"
     color_file_path = "./color_dict.json"
     object_file_path = "./object_list.pkl"
     pcl = Arma3_PointsCloud(
         start_x=8500,
-        start_y=18100,
-        width=300,
-        height=300,
+        start_y=18800,
+        width=100,
+        height=100,
         stride=10,
         store_path=points_cloud_store_path,
         color_file_path=color_file_path,

@@ -1,48 +1,41 @@
+import open3d as o3d
 import numpy as np
-import pywt
-import matplotlib.pyplot as plt
+import cv2
+import time
 
-# 示例时间序列，包含0-1-0的结构
-time_series = np.array([0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1])
+# Load the point cloud file
+pcd = o3d.io.read_point_cloud("Filted\[8500-18200].ply")
 
-# 1. 进行小波变换（DWT）
-# 使用 'db1'（Daubechies 1）小波，适合二值序列的简单特征分析
-coeffs = pywt.wavedec(time_series, 'db1', level=3)
+# Initialize the Open3D visualizer
+vis = o3d.visualization.Visualizer()
+vis.create_window()
+vis.add_geometry(pcd)
 
-# 提取不同尺度下的小波系数
-cA3, cD3, cD2, cD1 = coeffs
-for i in coeffs:
-    print(i.shape)
-# 2. 查看不同尺度下的系数，识别长时间保持1的结构
-plt.figure(figsize=(12, 8))
-sustained_score = np.sum(np.square(cA3)) / (np.sum(np.square(cA3)) + np.sum(np.square(cD3)) + np.sum(np.square(cD2)) + np.sum(np.square(cD1)))
-print(sustained_score)
-plt.subplot(5, 1, 1)
-plt.scatter(range(len(time_series)),time_series, label='Original Time Series')
-plt.legend()
+# Run a loop to update the depth map as the camera changes
+try:
+    while True:
+        # Capture the depth image from the current camera view
+        depth = vis.capture_depth_float_buffer(True)
+        depth_image = np.asarray(depth)
 
-plt.subplot(5, 1, 2)
-plt.scatter(range(len(cA3)),cA3, label='Approximation Coefficients (cA3)')
-plt.legend()
+        # Normalize depth image for display with OpenCV
+        depth_normalized = cv2.normalize(depth_image, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
 
-plt.subplot(5, 1, 3)
-plt.scatter(range(len(cD3)),cD3, label='Detail Coefficients (cD3)')
-plt.legend()
+        # Display the depth map using OpenCV
+        cv2.imshow("Depth Map from Point Cloud", depth_normalized)
 
-plt.subplot(5, 1, 4)
-plt.scatter(range(len(cD2)),cD2, label='Detail Coefficients (cD2)')
-plt.legend()
+        # Check for 'q' key press to exit
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-plt.subplot(5, 1, 5)
-plt.scatter(range(len(cD1)),cD1, label='Detail Coefficients (cD1)')
-plt.legend()
+        # Allow Open3D to update the visualization and handle user inputs
+        vis.poll_events()
+        vis.update_renderer()
 
-plt.tight_layout()
-plt.show()
+except KeyboardInterrupt:
+    print("Closing visualization...")
 
-# 3. 通过系数分析，筛选出符合“长时间保持1”的段落
-# cA3中较大值的区域往往对应着稳定的1区域
-threshold = 0.5  # 可调整的阈值
-long_ones_sections = np.where(cA3 > threshold)[0]  # 获取高于阈值的区域
-
-print("符合条件的长时间1段位于:", long_ones_sections)
+finally:
+    # Clean up Open3D and OpenCV windows
+    vis.destroy_window()
+    cv2.destroyAllWindows()

@@ -1,3 +1,5 @@
-app.log
+/*.log
+/*.ply
+/*.txt
 /PointsCloud
 /Filted

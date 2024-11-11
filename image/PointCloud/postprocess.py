@@ -104,7 +104,7 @@ def voxel_point_cloud(input_file, output_file, voxel_size):
     o3d.io.write_point_cloud(output_file, points)
 
 
-def wipe_out_height(path_name, file_name, z_min, z_max):
+def wipe_out_height(path_name, file_name, output_file, z_min, z_max):
     file_path = os.path.join(path_name, file_name)
     pcd = o3d.io.read_point_cloud(file_path)
 
@@ -123,11 +123,10 @@ def wipe_out_height(path_name, file_name, z_min, z_max):
     filtered_pcd.normals = o3d.utility.Vector3dVector(filtered_normals)
     filtered_pcd.colors = o3d.utility.Vector3dVector(filtered_colors)
 
-    output_path = f"./Filted/{file_name}"
-    o3d.io.write_point_cloud(output_path, filtered_pcd)
+    o3d.io.write_point_cloud(output_file, filtered_pcd)
 
 
-def merge_two_point_cloud_file(folder1, folder2):
+def merge_two_point_cloud_file(folder1, folder2, output_path):
     ply_files1 = [
         filename for filename in os.listdir(folder1) if filename.endswith(".ply")
     ]
@@ -145,8 +144,8 @@ def merge_two_point_cloud_file(folder1, folder2):
         pcd1 = o3d.io.read_point_cloud(file_path1)
         pcd2 = o3d.io.read_point_cloud(file_path2)
         total_pcd = pcd1 + pcd2
-        output_path = f"./1/{filename}"
-        o3d.io.write_point_cloud(output_path, total_pcd)
+        file_path = os.path.join(output_path, filename)
+        o3d.io.write_point_cloud(file_path, total_pcd)
 
 
 def load_color_dict(file_path):
@@ -207,10 +206,6 @@ def build_refer_json(color_dict, object_list, store_file_path):
         json.dump(ref_dict, file, sort_keys=True, indent=4)
 
 
-def points_color_merge(file_name):
-    pass
-
-
 def color_to_object(points_color, ref_dict: dict):
     restore_color = [int(rgb * 255) for rgb in points_color]
     hex_color_str = rgb_to_hex(restore_color)
@@ -242,6 +237,14 @@ def setup_logger(log_file="postprocess.log", log_level=logging.INFO):
 
 
 def load_ref_json_file(file_name):
+    """Loading a json file as dict()
+
+    Args:
+        file_name (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     if os.path.exists(file_name):
         with open(file_name, "r") as file:
             color_dict = json.load(file)
@@ -252,6 +255,14 @@ def load_ref_json_file(file_name):
 
 
 def test_color_mapping(input_path, ref_json):
+    """Test the color of the `.ply` files in the folder that\n
+
+    can be recognized as a object in `ref_json`
+
+    Args:
+        input_path (_type_): _description_
+        ref_json (_type_): _description_
+    """
     folder_path = input_path
     ply_files = [
         filename for filename in os.listdir(folder_path) if filename.endswith(".ply")
@@ -272,6 +283,18 @@ def test_color_mapping(input_path, ref_json):
 
 
 def process_object_list(file_path, output_path):
+    """According the description of arma3 object name, \n
+
+    choose a shortest name and as a key to dict(), merge \n
+    the same description about object
+
+    Args:
+        file_path (_type_): _description_
+        output_path (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     unique_object = dict()
     if os.path.exists(file_path):
         with open(file_path, "rb") as file:
@@ -293,6 +316,19 @@ def process_object_list(file_path, output_path):
 def refine_colored_point_cloud(
     input_path, output_path, color_dict, color_info, unique_object
 ):
+    """Used to merge the closed description in arma3 object name,\n
+
+    according the `color_info` to find the short description of arma3 object name,\n
+    and then get the index of the object name in `unique_object`, and choose \n
+    a color according the `color_dict`
+
+    Args:
+        input_path (_type_): _description_
+        output_path (_type_): _description_
+        color_dict (_type_): _description_
+        color_info (_type_): _description_
+        unique_object (_type_): _description_
+    """
     folder_path = input_path
     ply_files = [
         filename for filename in os.listdir(folder_path) if filename.endswith(".ply")
@@ -313,34 +349,96 @@ def refine_colored_point_cloud(
         o3d.io.write_point_cloud(file_path, pcd)
 
 
+def remove_unused_object(file_path: str, output_path: str, color_info: dict, unused_object_list: list):
+    """Remove unused object in unused_object_list such as animals, \n
+    
+    usually end with `agent` or `kestrel_f`
+
+    Args:
+        file_path (str): _description_
+        output_path (str): _description_
+        color_info (dict): _description_
+        unused_object_list (list): _description_
+    """
+    pcd = o3d.io.read_point_cloud(file_path)
+    points = np.asarray(pcd.points)
+    normals = np.asarray(pcd.normals)
+    colors = np.asarray(pcd.colors)
+    mask = np.ones(len(colors), dtype=bool)
+    for i, color in enumerate(tqdm(colors, desc="Processing .ply files")):
+        object_name = color_to_object(color, color_info)
+        if object_name != False:
+            if object_name in unused_object_list:
+                mask[i] = False  # 标记需要删除的点
+        else:
+            print("ERROR!")
+    points = points[mask]
+    normals = normals[mask]
+    colors = colors[mask]
+
+    pcd.points = o3d.utility.Vector3dVector(points)
+    pcd.normals = o3d.utility.Vector3dVector(normals)
+    pcd.colors = o3d.utility.Vector3dVector(colors)
+    o3d.io.write_point_cloud(output_path, pcd)
+
+
+def get_object_above_height(file_path, color_info, height, detailed=False):
+    object_list = []
+    pcd = o3d.io.read_point_cloud(file_path)
+    points = np.asarray(pcd.points)
+    normals = np.asarray(pcd.normals)
+    colors = np.asarray(pcd.colors)
+    x_min, y_min, z_min = np.min(points, axis=0)
+    x_max, y_max, z_max = np.max(points, axis=0)
+    print(f"x_min:{x_min} y_min:{y_min} z_min:{z_min}")
+    print(f"x_max:{x_max} y_max:{y_max} z_max:{z_max}")
+    if detailed == False:
+        return
+    for i, points in enumerate(tqdm(points, desc="Processing .ply files")):
+        if points[2] > height:
+            object_name = color_to_object(colors[i], color_info)
+            if object_name != False:
+                object_list.appen(object_name)
+            else:
+                print("ERROR!")
+    print(object_list)
+    return object_list
+
+
 logger = setup_logger()
 
-work_dir = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored"
+work_dir = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Forest\Colored"
 output_dir = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Filted"
 
-in_path_name = r"D:\Gancenty\Desktop"
-in_file_name = "total-0.1.ply"
+in_path_name = r"filted.ply"
+in_file_name = "filted.ply"
 
-out_path_name = ""
+out_path_name = "filted.ply"
 out_file_name = ""
 
-color_info_json = load_ref_json_file("color_info.json")
-color_json = load_ref_json_file("color_dict.json")
-object_json = load_ref_json_file("unique_object_json.json")
+color_info_json = load_ref_json_file(r"Online_File\color_info.json")
+color_json = load_ref_json_file(r"Online_File\color_dict.json")
+object_json = load_ref_json_file(r"Online_File\unique_object_json.json")
 
-refine_colored_point_cloud(
-    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored",
-    r"Filted/",
-    color_json,
-    color_info_json,
-    object_json,
-)
-# test_color_mapping(work_dir, ref_json)
-
+# unused_list = []
+# for i in object_json.keys():
+#     if i[:5] == "Agent":
+#         unused_list.append(i)
+# remove_unused_object(in_path_name, out_path_name, color_info_json, ["kestrel_f"])
+# refine_colored_point_cloud(
+#     r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Forest\Colored",
+#     r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Forest\Filted",
+#     color_json,
+#     color_info_json,
+#     object_json,
+# )
+# get_object_above_height("0.2.ply", color_info_json, 220, True)
+# test_color_mapping(work_dir, color_info_json)
+voxel_point_cloud(in_path_name, "./0.2.ply", 0.1)
 # process_object_list("object_list.pkl", "unique_object_json.json")
 
 # color_dict = load_color_dict("color_dict.json")
-# object_list = load_object_list("object_list.pkl","1.txt")
+# object_list = load_object_list("object_list.pkl","3.txt")
 # build_refer_json(color_dict=color_dict, object_list=object_list, store_file_path="./color_info.json")
 
 # merge_two_point_cloud_file(r"F:\Arma3\PointsCloud\Arma3_Forest\1\PointsCloud",r"F:\Arma3\PointsCloud\Arma3_Forest\1\Add")
