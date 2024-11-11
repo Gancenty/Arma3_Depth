@@ -332,6 +332,17 @@ def process_object_list(file_path, output_path):
         return unique_object
 
 
+def finetune_object_json(file_name):
+    """Continue with the `process_object_list`,\n
+
+    add more constraint to reduce the object count
+
+    Args:
+        file_name (_type_): _description_
+    """
+    pass
+
+
 def refine_colored_point_cloud(
     input_path, output_path, color_dict, color_info, unique_object
 ):
@@ -368,9 +379,11 @@ def refine_colored_point_cloud(
         o3d.io.write_point_cloud(file_path, pcd)
 
 
-def remove_unused_object(file_path: str, output_path: str, color_info: dict, unused_object_list: list):
+def remove_unused_object(
+    file_path: str, output_path: str, color_info: dict, unused_object_list: list
+):
     """Remove unused object in unused_object_list such as animals, \n
-    
+
     usually end with `agent` or `kestrel_f`
 
     Args:

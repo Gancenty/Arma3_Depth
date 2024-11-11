@@ -228,8 +228,8 @@ class Arma3_PointsCloud:
                             % (
                                 len(self.color_dict),
                                 len(self.object_list),
-                                pcl.now_coord_index + 1,
-                                len(pcl.grid_points),
+                                self.now_coord_index + 1,
+                                len(self.grid_points),
                             )
                         )
 
