@@ -199,13 +199,14 @@ while {true} do {
 
 		_target_pos = ATLToASL([_target_control select 0, _target_control select 1, 3]);
 		_cnt1 = [_target_pos] call fuc_low_scan;
-		sleep(0.1);
+		sleep(0.5);
 
 		_target_pos = ATLToASL([_target_control select 0, _target_control select 1, 20]);
 		_cnt2 = [_target_pos] call fuc_high_scan;
-		sleep(0.1);
+		sleep(0.5);
 
 		["image.send_com_message", ["Y"+str (_cnt1 + _cnt2)]] call py3_fnc_callExtension;
+		sleep(0.1);
 		["image.send_com_message", ["I"+str (object_class_map)]] call py3_fnc_callExtension;
 	};
 	sleep(0.001);
