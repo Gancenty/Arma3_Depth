@@ -590,27 +590,32 @@ def merge_two_object_info(info_path_base, info_path_add, output_object_path):
             new_object["object_name"] = object_name
             new_object["hex_color"] = hex_color_str
             new_object["index"] = new_index
-            object_info_1[object_name] = new_object
+            color_dict_1[str(new_index)] = new_color
             object_list_1.append([info["object"], new_index])
             color_info_1[hex_color_str] = new_object
-            color_dict_1[str(new_index)] = new_color
+            object_info_1[object_name] = new_object
             unique_object_json_1[object_name] = new_index
     
-    with open(new_object_info_path, "w") as out_file:
-        json.dump(object_info_1, out_file, sort_keys=True, indent=4)
-        
-    with open(new_color_info_path, "w") as out_file:
-        json.dump(color_info_1, out_file, sort_keys=True, indent=4)
-        
-    with open(new_unique_object_path, "w") as out_file:
-        json.dump(unique_object_json_1, out_file, sort_keys=True, indent=4)
-        
+    print(f"New Color Dict saved in {new_color_dict_path}, Len:{len(color_dict_1)}")
     color_dict_1 = {str(k): v for k, v in color_dict_1.items()}
     with open(new_color_dict_path, "w") as out_file:
         json.dump(color_dict_1, out_file, sort_keys=True, indent=4)
         
+    print(f"New Object List saved in {new_object_list_path}, Len:{len(object_list_1)}")
     with open(new_object_list_path, "wb") as file:
         pickle.dump(object_list_1, file)
+        
+    print(f"New Color Info saved in {new_color_info_path}, Len:{len(color_info_1)}")
+    with open(new_color_info_path, "w") as out_file:
+        json.dump(color_info_1, out_file, sort_keys=True, indent=4)
+        
+    print(f"New Object Info saved in {new_object_info_path}, Len:{len(object_info_1)}")
+    with open(new_object_info_path, "w") as out_file:
+        json.dump(object_info_1, out_file, sort_keys=True, indent=4)
+        
+    print(f"New Unique Object Json saved in {new_unique_object_path}, Len:{len(unique_object_json_1)}")
+    with open(new_unique_object_path, "w") as out_file:
+        json.dump(unique_object_json_1, out_file, sort_keys=True, indent=4)
         
         
 logger = setup_logger()
