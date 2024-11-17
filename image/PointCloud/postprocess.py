@@ -11,6 +11,27 @@ import colorama
 
 colorama.init(autoreset=True)
 
+
+def open_ply_files(file_name):
+    pcd = o3d.io.read_point_cloud(file_name)
+    return pcd
+
+
+def setup_logger(log_file="postprocess.log", log_level=logging.INFO):
+    logger = logging.getLogger("Logger")
+    logger.setLevel(log_level)
+
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setLevel(log_level)
+
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    return logger
+
+
 def refine_point_cloud(points, voxel_size=0.01):
     points = points.remove_non_finite_points()
     points = points.remove_duplicated_points()
@@ -156,7 +177,9 @@ def load_color_dict(file_path: str):
         with open(file_path, "r") as file:
             color_dict = json.load(file)
             color_dict = {int(k): v for k, v in color_dict.items()}
-            print(f"{file_path}:{len(color_dict)}")
+            print(
+                f"{colorama.Fore.GREEN}Color_dict {colorama.Fore.RESET}{file_path}: {colorama.Fore.GREEN}{len(color_dict)}"
+            )
             return color_dict
     else:
         return None
@@ -166,13 +189,36 @@ def load_object_list(file_path: str, output_path=None):
     if os.path.exists(file_path):
         with open(file_path, "rb") as file:
             object_list = pickle.load(file)
-            print(f"Object_list {file_path}:{len(object_list)}")
+            print(
+                f"{colorama.Fore.BLUE}Object_list {colorama.Fore.RESET}{file_path}: {colorama.Fore.BLUE}{len(object_list)}"
+            )
             if output_path is None:
                 return object_list
             with open(output_path, "w") as out_file:
                 for item in object_list:
                     out_file.write(f"{item}\n")
             return object_list
+    else:
+        return None
+
+
+def load_ref_json_file(file_name):
+    """Loading a json file as dict()
+
+    Args:
+        file_name (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    if os.path.exists(file_name):
+        with open(file_name, "r") as file:
+            color_dict = json.load(file)
+            len_color_dict = len(color_dict)
+            print(
+                f"{colorama.Fore.YELLOW}Load Json {colorama.Fore.RESET}{file_name}: {colorama.Fore.YELLOW}{len_color_dict}"
+            )
+            return color_dict
     else:
         return None
 
@@ -187,6 +233,15 @@ def rgb_to_hex(rgb):
         _type_: _description_
     """
     return "#{:02X}{:02X}{:02X}".format(rgb[0], rgb[1], rgb[2])
+
+
+def color_to_object(normalized_points_color, color_info_dict: dict):
+    restore_color = [int(rgb * 255) for rgb in normalized_points_color]
+    hex_color_str = rgb_to_hex(restore_color)
+    if hex_color_str in color_info_dict.keys():
+        return color_info_dict[hex_color_str]["object_name"]
+    else:
+        raise ValueError(f"Error {hex_color_str}")
 
 
 def build_color_info_json(color_dict: dict, object_list: list, store_file_path: str):
@@ -229,86 +284,6 @@ def build_color_info_json(color_dict: dict, object_list: list, store_file_path: 
             print(f"{object_info} and {index} is not in color_dict")
     with open(store_file_path, "w") as file:
         json.dump(ref_dict, file, sort_keys=True, indent=4)
-
-
-def color_to_object(normalized_points_color, color_info_dict: dict):
-    restore_color = [int(rgb * 255) for rgb in normalized_points_color]
-    hex_color_str = rgb_to_hex(restore_color)
-    if hex_color_str in color_info_dict.keys():
-        return color_info_dict[hex_color_str]["object_name"]
-    else:
-        print("Failed:", hex_color_str)
-        return False
-
-
-def open_ply_files(file_name):
-    pcd = o3d.io.read_point_cloud(file_name)
-    return pcd
-
-
-def setup_logger(log_file="postprocess.log", log_level=logging.INFO):
-    logger = logging.getLogger("Logger")
-    logger.setLevel(log_level)
-
-    file_handler = logging.FileHandler(log_file)
-    file_handler.setLevel(log_level)
-
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-    return logger
-
-
-def load_ref_json_file(file_name):
-    """Loading a json file as dict()
-
-    Args:
-        file_name (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """
-    if os.path.exists(file_name):
-        with open(file_name, "r") as file:
-            color_dict = json.load(file)
-            len_color_dict = len(color_dict)
-            print(f"{file_name}:{len_color_dict}")
-            return color_dict
-    else:
-        return None
-
-
-def test_color_mapping(input_path, color_info_dict: dict):
-    """Test the color of the `.ply` files in the folder that\n
-
-    can be recognized as a object in `ref_json`
-
-    Args:
-        input_path (_type_): _description_
-        ref_json (_type_): _description_
-    """
-    folder_path = input_path
-    ply_files = [
-        filename for filename in os.listdir(folder_path) if filename.endswith(".ply")
-    ]
-    fail_cnt = 0
-    for filename in tqdm(ply_files, desc="Processing .ply files"):
-        file_path = os.path.join(folder_path, filename)
-        pcd = o3d.io.read_point_cloud(file_path)
-        color = np.asarray(pcd.colors)
-        loop = tqdm(range(len(color)), desc="Processing .ply files")
-        for i in loop:
-            ans = color_to_object(color[i], color_info_dict)
-            if ans == False:
-                fail_cnt += 1
-            loop.set_description(f"Fail_cnt:{fail_cnt}")
-
-        if fail_cnt:
-            logger.error(f"{filename} Failed_cnt:{fail_cnt}")
-        else:
-            logger.info(f"{filename} Failed_cnt:{fail_cnt}")
 
 
 def build_unique_object_json(object_list_file_path, output_path):
@@ -370,6 +345,37 @@ def build_object_info_json(
     return objects_info
 
 
+def test_color_mapping(input_path, color_info_dict: dict):
+    """Test the color of the `.ply` files in the folder that\n
+
+    can be recognized as a object in `ref_json`
+
+    Args:
+        input_path (_type_): _description_
+        ref_json (_type_): _description_
+    """
+    folder_path = input_path
+    ply_files = [
+        filename for filename in os.listdir(folder_path) if filename.endswith(".ply")
+    ]
+    fail_cnt = 0
+    for filename in tqdm(ply_files, desc="Processing .ply files"):
+        file_path = os.path.join(folder_path, filename)
+        pcd = o3d.io.read_point_cloud(file_path)
+        color = np.asarray(pcd.colors)
+        loop = tqdm(range(len(color)), desc="Processing .ply files")
+        for i in loop:
+            ans = color_to_object(color[i], color_info_dict)
+            if ans == False:
+                fail_cnt += 1
+            loop.set_description(f"Fail_cnt:{fail_cnt}")
+
+        if fail_cnt:
+            logger.error(f"{filename} Failed_cnt:{fail_cnt}")
+        else:
+            logger.info(f"{filename} Failed_cnt:{fail_cnt}")
+
+
 def get_unused_object_list(unique_object: dict):
     """Continue with the `process_object_list`,\n
 
@@ -388,7 +394,11 @@ def get_unused_object_list(unique_object: dict):
 
 
 def refine_colored_point_cloud(
-    input_path, output_path, color_dict, color_info, unique_object
+    input_path: str,
+    output_path: str,
+    color_dict: dict,
+    color_info: dict,
+    unique_object: dict,
 ):
     """Used to merge the closed description in arma3 object name,\n
 
@@ -407,18 +417,31 @@ def refine_colored_point_cloud(
     ply_files = [
         filename for filename in os.listdir(folder_path) if filename.endswith(".ply")
     ]
+    unused_list = get_unused_object_list(unique_object)
     for index, filename in enumerate(tqdm(ply_files, desc="Processing .ply files")):
         file_path = os.path.join(folder_path, filename)
         pcd = o3d.io.read_point_cloud(file_path)
-        color = np.asarray(pcd.colors)
-        for i, item in enumerate((tqdm(color, desc="Processing .ply files"))):
-            object_name = color_to_object(color[i], color_info)
+        points = np.asarray(pcd.points)
+        normals = np.asarray(pcd.normals)
+        colors = np.asarray(pcd.colors)
+        mask = np.ones(len(colors), dtype=bool)
+        for i, item in enumerate((tqdm(colors, desc="Processing .ply files"))):
+            object_name = color_to_object(colors[i], color_info)
             if object_name != False:
+                if object_name in unused_list:
+                    mask[i] = False
+                    continue
                 color_index = unique_object[object_name]
-                color[i] = np.array(color_dict[str(color_index)]) / 255.0
+                colors[i] = np.array(color_dict[str(color_index)]) / 255.0
             else:
                 print("x" * 20 + "ERROR!" + "x" * 20)
-        pcd.colors = o3d.utility.Vector3dVector(color)
+        points = points[mask]
+        normals = normals[mask]
+        colors = colors[mask]
+
+        pcd.points = o3d.utility.Vector3dVector(points)
+        pcd.normals = o3d.utility.Vector3dVector(normals)
+        pcd.colors = o3d.utility.Vector3dVector(colors)
         file_path = os.path.join(output_path, filename)
         o3d.io.write_point_cloud(file_path, pcd)
 
@@ -577,14 +600,14 @@ def merge_two_object_info(info_path_base, info_path_add, output_object_path):
     new_object_list_path = os.path.join(output_object_path, "object_list.pkl")
     new_object_list_txt_path = os.path.join(output_object_path, "object_list.txt")
 
-    print("-"*20 + "Loading  1  Files" + "-"*20)
+    print("-" * 20 + "Loading  1  Files" + "-" * 20)
     color_dict_1 = load_color_dict(color_dict_path_1)
     object_list_1 = load_object_list(object_list_path_1)
     color_info_1 = load_ref_json_file(color_info_path_1)
     object_info_1 = load_ref_json_file(object_info_path_1)
     unique_object_json_1 = load_ref_json_file(unique_object_path_1)
 
-    print("-"*20 + "Loading  2  Files" + "-"*20)
+    print("-" * 20 + "Loading  2  Files" + "-" * 20)
     color_dict_2 = load_color_dict(color_dict_path_2)
     object_list_2 = load_object_list(object_list_path_2)
     color_info_2 = load_ref_json_file(color_info_path_2)
@@ -612,8 +635,8 @@ def merge_two_object_info(info_path_base, info_path_add, output_object_path):
             color_info_1[hex_color_str] = new_object
             object_info_1[object_name] = new_object
             unique_object_json_1[object_name] = new_index
-    
-    print("-"*20 + "Saving new Files" + "-"*20)
+
+    print("-" * 20 + "Saving new Files" + "-" * 20)
     print(f"New Color Dict saved in {new_color_dict_path}, Len:{len(color_dict_1)}")
     color_dict_1 = {str(k): v for k, v in color_dict_1.items()}
     with open(new_color_dict_path, "w") as out_file:
@@ -636,14 +659,16 @@ def merge_two_object_info(info_path_base, info_path_add, output_object_path):
     )
     with open(new_unique_object_path, "w") as out_file:
         json.dump(unique_object_json_1, out_file, sort_keys=True, indent=4)
-    
+
     with open(new_object_list_txt_path, "w") as out_file:
         for item in object_list_1:
             out_file.write(f"{item}\n")
-    print("-"*20 + "      over!     " + "-"*20)
+    print("-" * 20 + "      Over!     " + "-" * 20)
 
 
-def change_points_cloud_color(pcd_input_path, pcd_output_path, color_info_path_origin, object_info_path_new):
+def change_points_cloud_color(
+    pcd_input_path, pcd_output_path, color_info_path_origin, object_info_path_new
+):
     color_info_origin = load_ref_json_file(color_info_path_origin)
     object_info_new = load_ref_json_file(object_info_path_new)
     pcd = o3d.io.read_point_cloud(pcd_input_path)
@@ -686,17 +711,18 @@ color_dict_path = (
 unique_object_json_path = (
     r"/Users/guoan/Documents/GitHub/Arma3_Depth/Arma3_Forest/unique_object_json.json"
 )
-
+load_color_dict(color_dict_path)
+load_ref_json_file(color_info_path)
 # unused_list = get_unused_object_list(unique_object_json)
 # remove_unused_object(in_path_name, out_path_name, color_info_json, unused_list)
-merge_two_object_info(path1, path2, path3)
+# merge_two_object_info(path1, path2, path3)
 
-path1 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-2.ply"
-path2 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-2-Changed.ply"
-path3 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Object_Info\color_info.json"
-path4 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info\object_info.json"
+# path1 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-2.ply"
+# path2 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-2-Changed.ply"
+# path3 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Object_Info\color_info.json"
+# path4 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info\object_info.json"
 
-change_points_cloud_color(path1, path2, path3, path4)
+# change_points_cloud_color(path1, path2, path3, path4)
 
 # get_object_above_height("0.2.ply", color_info_json, 220, True)
 # voxel_point_cloud(out_path_name, "./building-2-0.1.ply", 0.1)
