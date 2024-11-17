@@ -637,6 +637,22 @@ def merge_two_object_info(info_path_base, info_path_add, output_object_path):
             out_file.write(f"{item}\n")
 
 
+def change_points_cloud_color(pcd_input_path, pcd_output_path, color_info_path_origin, object_info_path_new):
+    color_info_origin = load_ref_json_file(color_info_path_origin)
+    object_info_new = load_ref_json_file(object_info_path_new)
+    pcd = o3d.io.read_point_cloud(pcd_input_path)
+    color = np.asarray(pcd.colors)
+    for i, item in enumerate((tqdm(color, desc="Processing .ply files"))):
+        object_name = color_to_object(color[i], color_info_origin)
+        if object_name != False:
+            new_color = object_info_new[object_name]
+            color[i] = np.array(new_color) / 255.0
+        else:
+            print("x" * 20 + "ERROR!" + "x" * 20)
+    pcd.colors = o3d.utility.Vector3dVector(color)
+    o3d.io.write_point_cloud(pcd_output_path, pcd)
+
+
 logger = setup_logger()
 
 input_dir = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Building"
