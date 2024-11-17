@@ -104,7 +104,7 @@ def merge_point_cloud(input_path, output_path):
             print(f"Refined: Index:{index}-FileName:{filename}")
         cnt += 1
     total_pcd = refine_point_cloud(total_pcd)
-    output_file_name = os.path.join(folder_path, f"merged.ply")
+    output_file_name = os.path.join(output_path, f"merged.ply")
     o3d.io.write_point_cloud(output_file_name, total_pcd)
 
 
@@ -758,19 +758,19 @@ logger = setup_logger()
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
 # *********************************************Used to merged two points cloud************************************************************************
 
-base_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-1\Object_Info"
-add_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Object_Info"
+base_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info"
+add_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Object_Info"
 output_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info"
 merge_two_object_info(base_path, add_path, output_path)
 
 # only convert the color of points cloud file in add_path to desired color info file
 pcd_input_path = (
-    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-Filted.ply"
+    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Building-3-Filted.ply"
 )
 pcd_output_path = (
-    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-2.ply"
+    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-3-Filted.ply"
 )
-origin_color_info_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Object_Info\color_info.json"
+origin_color_info_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Object_Info\color_info.json"
 new_object_info_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info\object_info.json"
 change_points_cloud_color(
     pcd_input_path, pcd_output_path, origin_color_info_path, new_object_info_path
@@ -783,12 +783,12 @@ change_points_cloud_color(
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
 # *********************************************Rectify points cloud to cut unneccssary boundary*******************************************************
 
-input_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3"
-output_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3"
-init_x_coord = 8500
-init_y_coord = 18100
-height = 300
-width = 300
-wipe_out_point_cloud(input_path, output_path, init_x_coord, init_y_coord, width, height)
+# input_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3"
+# output_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3"
+# init_x_coord = 8500
+# init_y_coord = 18100
+# height = 300
+# width = 300
+# wipe_out_point_cloud(input_path, output_path, init_x_coord, init_y_coord, width, height)
 # ************************************************************End*************************************************************************************
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
