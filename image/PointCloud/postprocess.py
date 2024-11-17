@@ -7,7 +7,9 @@ import pickle
 from tqdm import tqdm
 import numpy as np
 import open3d as o3d
+import colorama
 
+colorama.init(autoreset=True)
 
 def refine_point_cloud(points, voxel_size=0.01):
     points = points.remove_non_finite_points()
