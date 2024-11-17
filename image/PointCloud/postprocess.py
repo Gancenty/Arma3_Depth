@@ -761,6 +761,7 @@ remove_unused_object(in_file_name, out_file_name, color_info_json, unused_list)
 # output_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info"
 # merge_two_object_info(base_path, add_path, output_path)
 
+# # only convert the color of points cloud file in add_path to desired color info file
 # pcd_input_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-2.ply"
 # pcd_output_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-2-Changed.ply"
 # origin_color_info_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Object_Info\color_info.json"
