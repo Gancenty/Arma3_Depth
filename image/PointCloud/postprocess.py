@@ -160,11 +160,11 @@ def load_color_dict(file_path):
         return None
 
 
-def load_object_list(file_path, output_path = None):
+def load_object_list(file_path, output_path=None):
     if os.path.exists(file_path):
         with open(file_path, "rb") as file:
             object_list = pickle.load(file)
-            print(f"{file_path}-Len:{len(object_list)}")
+            print(f"{file_path}:{len(object_list)}")
             if output_path is None:
                 return object_list
             print(f"{file_path}:{len(object_list)}")
@@ -338,9 +338,11 @@ def build_unique_object_json(object_list_file_path, output_path):
         return unique_object
 
 
-def build_object_info_json(unique_object: dict, color_dict: dict, color_info: dict, output_path: str):
+def build_object_info_json(
+    unique_object: dict, color_dict: dict, color_info: dict, output_path: str
+):
     """generate object_info.json as function to color_info.json\n
-    
+
     the key is the short object name
 
     Args:
@@ -354,13 +356,12 @@ def build_object_info_json(unique_object: dict, color_dict: dict, color_info: di
     """
     objects_info = {}
     for object_name, index in unique_object.items():
-        info ={}
+        info = {}
         hex_color_str = rgb_to_hex(color_dict[str(index)])
         info = color_info[hex_color_str]
         info["hex_color"] = hex_color_str
         objects_info[object_name] = info
-    file_path = os.path.join(output_path, "object_info.json")
-    with open(file_path, "w") as out_file:
+    with open(output_path, "w") as out_file:
         json.dump(objects_info, out_file, sort_keys=True, indent=4)
     return objects_info
 
@@ -512,7 +513,9 @@ def process_pipeline(
     color_info_json = load_ref_json_file(color_info_path)
     color_dict_json = load_ref_json_file(color_dict_path)
     unique_object_json = load_ref_json_file(unique_object_json_path)
-    build_object_info_json(unique_object_json, color_dict_json, color_info_json, object_info_path)
+    build_object_info_json(
+        unique_object_json, color_dict_json, color_info_json, object_info_path
+    )
 
     refine_colored_point_cloud(
         input_point_path,
@@ -522,6 +525,7 @@ def process_pipeline(
         unique_object_json,
     )
 
+
 def get_unique_color(color_dict: dict, color: list):
     if color in color_dict.values():
         return color
@@ -530,18 +534,20 @@ def get_unique_color(color_dict: dict, color: list):
         if color not in color_dict.values():
             return color
 
+
 def get_new_index(color_dict: dict, index: int):
     if str(index) not in color_dict.keys():
         return index
     max_index = max(color_dict.keys())
-    assert max_index <= 255*255*255 - 1
-    
+    assert max_index <= 255 * 255 * 255 - 1
+
     set_keys = set(color_dict.keys())
-    full_set_keys = set(range(0, max_index+2))
-    
+    full_set_keys = set(range(0, max_index + 2))
+
     missed_keys = full_set_keys - set_keys
     min_set_key = min(missed_keys)
-    return min_set_key    
+    return min_set_key
+
 
 def merge_two_object_info(info_path_base, info_path_add, output_object_path):
     color_dict_path_1 = os.path.join(info_path_base, "color_dict.json")
@@ -549,39 +555,39 @@ def merge_two_object_info(info_path_base, info_path_add, output_object_path):
     unique_object_path_1 = os.path.join(info_path_base, "unique_object_json.json")
     object_info_path_1 = os.path.join(info_path_base, "object_info.json")
     object_list_path_1 = os.path.join(info_path_base, "object_list.pkl")
-    
+
     color_dict_path_2 = os.path.join(info_path_add, "color_dict.json")
     color_info_path_2 = os.path.join(info_path_add, "color_info.json")
     unique_object_path_2 = os.path.join(info_path_add, "unique_object_json.json")
     object_info_path_2 = os.path.join(info_path_add, "object_info.json")
     object_list_path_2 = os.path.join(info_path_add, "object_list.pkl")
-    
+
     new_color_dict_path = os.path.join(output_object_path, "color_dict.json")
     new_color_info_path = os.path.join(output_object_path, "color_info.json")
     new_unique_object_path = os.path.join(output_object_path, "unique_object_json.json")
     new_object_info_path = os.path.join(output_object_path, "object_info.json")
     new_object_list_path = os.path.join(output_object_path, "object_list.pkl")
-    
+
     color_dict_1 = load_color_dict(color_dict_path_1)
     object_list_1 = load_object_list(object_list_path_1)
     color_info_1 = load_ref_json_file(color_info_path_1)
     object_info_1 = load_ref_json_file(object_info_path_1)
     unique_object_json_1 = load_ref_json_file(unique_object_path_1)
-    
+
     color_dict_2 = load_color_dict(color_dict_path_2)
     object_list_2 = load_object_list(object_list_path_2)
     color_info_2 = load_ref_json_file(color_info_path_2)
     object_info_2 = load_ref_json_file(object_info_path_2)
     unique_object_json_2 = load_ref_json_file(unique_object_path_2)
-    
+
     for object_name, info in object_info_2.items():
         if object_name not in object_info_1:
             new_color = get_unique_color(color_dict_1, info["color"])
             new_index = get_new_index(color_dict_1, int(info["index"]))
-            normalize_color = [rgb/255.0 for rgb in new_color]
+            normalize_color = [rgb / 255.0 for rgb in new_color]
             restore_color = [rgb * 255.0 for rgb in normalize_color]
             hex_color_str = rgb_to_hex(new_color)
-            
+
             new_object = {}
             new_object["color"] = new_color
             new_object["normalize_color"] = normalize_color
@@ -595,33 +601,35 @@ def merge_two_object_info(info_path_base, info_path_add, output_object_path):
             color_info_1[hex_color_str] = new_object
             object_info_1[object_name] = new_object
             unique_object_json_1[object_name] = new_index
-    
+
     print(f"New Color Dict saved in {new_color_dict_path}, Len:{len(color_dict_1)}")
     color_dict_1 = {str(k): v for k, v in color_dict_1.items()}
     with open(new_color_dict_path, "w") as out_file:
         json.dump(color_dict_1, out_file, sort_keys=True, indent=4)
-        
+
     print(f"New Object List saved in {new_object_list_path}, Len:{len(object_list_1)}")
     with open(new_object_list_path, "wb") as file:
         pickle.dump(object_list_1, file)
-        
+
     print(f"New Color Info saved in {new_color_info_path}, Len:{len(color_info_1)}")
     with open(new_color_info_path, "w") as out_file:
         json.dump(color_info_1, out_file, sort_keys=True, indent=4)
-        
+
     print(f"New Object Info saved in {new_object_info_path}, Len:{len(object_info_1)}")
     with open(new_object_info_path, "w") as out_file:
         json.dump(object_info_1, out_file, sort_keys=True, indent=4)
-        
-    print(f"New Unique Object Json saved in {new_unique_object_path}, Len:{len(unique_object_json_1)}")
+
+    print(
+        f"New Unique Object Json saved in {new_unique_object_path}, Len:{len(unique_object_json_1)}"
+    )
     with open(new_unique_object_path, "w") as out_file:
         json.dump(unique_object_json_1, out_file, sort_keys=True, indent=4)
-        
-        
+
+
 logger = setup_logger()
 
-input_dir = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Forest\Colored-2\Forest"
-output_dir = r"./Arma3_Forest"
+input_dir = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Building"
+output_dir = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Filted"
 
 in_path_name = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\merged.ply"
 in_file_name = "filted.ply"
@@ -629,32 +637,23 @@ in_file_name = "filted.ply"
 out_path_name = ""
 out_file_name = ""
 
-path1 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Forest\Colored-2\Object_Info\color_dict.json"
-path2 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Forest\Colored-2\Object_Info\object_list.pkl"
-path3 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Forest\Colored-2\Object_Info"
-# process_pipeline(path1, path2, path3, input_dir, output_dir)
+path1 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Object_Info\color_dict.json"
+path2 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Object_Info\object_list.pkl"
+path3 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Object_Info"
+process_pipeline(path1, path2, path3, input_dir, output_dir)
 
-color_info_path = r"/Users/guoan/Documents/GitHub/Arma3_Depth/Arma3_Forest/color_info.json"
-color_dict_path = r"/Users/guoan/Documents/GitHub/Arma3_Depth/Arma3_Forest/color_dict.json"
-unique_object_json_path = r"/Users/guoan/Documents/GitHub/Arma3_Depth/Arma3_Forest/unique_object_json.json"
+# color_info_path = r"/Users/guoan/Documents/GitHub/Arma3_Depth/Arma3_Forest/color_info.json"
+# color_dict_path = r"/Users/guoan/Documents/GitHub/Arma3_Depth/Arma3_Forest/color_dict.json"
+# unique_object_json_path = r"/Users/guoan/Documents/GitHub/Arma3_Depth/Arma3_Forest/unique_object_json.json"
 
-color_info_json = load_ref_json_file(color_info_path)
-color_dict_json = load_ref_json_file(color_dict_path)
-unique_object_json = load_ref_json_file(unique_object_json_path)
-
-a = load_color_dict(color_dict_path)
-b = load_object_list("Arma3_Building/object_list.pkl","1.txt")
+# color_info_json = load_ref_json_file(color_info_path)
+# color_dict_json = load_ref_json_file(color_dict_path)
+# unique_object_json = load_ref_json_file(unique_object_json_path)
 
 # build_object_info_json(unique_object_json, color_dict_json, color_info_json, output_dir)
 # unused_list = get_unused_object_list(unique_object_json)
 # remove_unused_object(in_path_name, out_path_name, color_info_json, unused_list)
-
-# print(list(a.keys()))
-
-a = {0: "a", 1:"a", 2:"b",3:"c", 5:"d"}
-ans = get_new_index(a, 3)
-print(ans)
-merge_two_object_info("./Arma3_Building", "./Arma3_Forest", "./Merged")
+# merge_two_object_info("./Arma3_Building", "./Arma3_Forest", "./Merged")
 
 # get_object_above_height("0.2.ply", color_info_json, 220, True)
 # test_color_mapping(work_dir, color_info_json)
