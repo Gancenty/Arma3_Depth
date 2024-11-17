@@ -99,14 +99,12 @@ def merge_point_cloud(input_path, output_path):
         total_pcd = total_pcd + pcd
         if (cnt % 100) == 0:
             total_pcd = refine_point_cloud(total_pcd)
-            output_file_name = file_path = os.path.join(
-                output_path, f"merged-{cnt}.ply"
-            )
+            output_file_name = os.path.join(output_path, f"merged-{cnt}.ply")
             o3d.io.write_point_cloud(output_file_name, total_pcd)
             print(f"Refined: Index:{index}-FileName:{filename}")
         cnt += 1
     total_pcd = refine_point_cloud(total_pcd)
-    output_file_name = file_path = os.path.join(folder_path, f"merged.ply")
+    output_file_name = os.path.join(folder_path, f"merged.ply")
     o3d.io.write_point_cloud(output_file_name, total_pcd)
 
 
@@ -194,9 +192,11 @@ def load_object_list(file_path: str, output_path=None):
             )
             if output_path is None:
                 return object_list
-            with open(output_path, "w") as out_file:
-                for item in object_list:
-                    out_file.write(f"{item}\n")
+            object_list_dict = {}
+            for name, index in object_list:
+                object_list_dict[name] = index
+            with open(output_path, "w") as file:
+                json.dump(object_list_dict, file, sort_keys=True, indent=4)
             return object_list
     else:
         return None
@@ -528,13 +528,13 @@ def process_pipeline(
     color_info_path = os.path.join(output_file_path, "color_info.json")
     unique_object_json_path = os.path.join(output_file_path, "unique_object_json.json")
     object_info_path = os.path.join(output_file_path, "object_info.json")
-    object_txt_path = os.path.join(output_file_path, "object_list.txt")
+    object_list_json_path = os.path.join(output_file_path, "object_list.json")
 
     color_dict_path = os.path.join(input_file_path, "color_dict.json")
     object_list_path = os.path.join(input_file_path, "object_list.pkl")
 
     color_dict = load_color_dict(color_dict_path)
-    object_list = load_object_list(object_list_path, object_txt_path)
+    object_list = load_object_list(object_list_path, object_list_json_path)
     build_color_info_json(
         color_dict=color_dict, object_list=object_list, store_file_path=color_info_path
     )
@@ -598,7 +598,7 @@ def merge_two_object_info(info_path_base, info_path_add, output_object_path):
     new_unique_object_path = os.path.join(output_object_path, "unique_object_json.json")
     new_object_info_path = os.path.join(output_object_path, "object_info.json")
     new_object_list_path = os.path.join(output_object_path, "object_list.pkl")
-    new_object_list_txt_path = os.path.join(output_object_path, "object_list.txt")
+    new_object_list_txt_path = os.path.join(output_object_path, "object_list.json")
 
     print("-" * 20 + "Loading  1  Files" + "-" * 20)
     color_dict_1 = load_color_dict(color_dict_path_1)
@@ -660,9 +660,14 @@ def merge_two_object_info(info_path_base, info_path_add, output_object_path):
     with open(new_unique_object_path, "w") as out_file:
         json.dump(unique_object_json_1, out_file, sort_keys=True, indent=4)
 
-    with open(new_object_list_txt_path, "w") as out_file:
-        for item in object_list_1:
-            out_file.write(f"{item}\n")
+    object_list_dict = {}
+    for name, index in object_list_1:
+        object_list_dict[name] = index
+    print(
+        f"New Object List Json saved in {new_object_list_txt_path}, Len:{len(object_list_dict)}"
+    )
+    with open(new_object_list_txt_path, "w") as file:
+        json.dump(object_list_dict, file, sort_keys=True, indent=4)
     print("-" * 20 + "      Over!     " + "-" * 20)
 
 
@@ -686,55 +691,81 @@ def change_points_cloud_color(
 
 logger = setup_logger()
 
-input_dir = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Building"
-output_dir = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Filted"
 
-in_path_name = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\merged.ply"
-in_file_name = "filted.ply"
+# ---------------------------------------------------------------------------------------------------------------------------------------------------#
+# ************************************First to Use to merge same object and remove unused  points*****************************************************
 
-out_path_name = ""
-out_file_name = ""
+# object_info_input_path = (
+#     r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Object_Info"
+# )
+# object_info_output_path = (
+#     r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Object_Info"
+# )
+# input_dir = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Building"
+# output_dir = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Filted"
+# process_pipeline(object_info_input_path, object_info_output_path, input_dir, output_dir)
 
-path1 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-1\Object_Info"
-path2 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Object_Info"
-path3 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info"
+# ************************************************************End*************************************************************************************
+# ---------------------------------------------------------------------------------------------------------------------------------------------------#
 
-# process_pipeline(path1, path2, input_dir, output_dir)
-# test_color_mapping("")
+# ---------------------------------------------------------------------------------------------------------------------------------------------------#
+# *******************************************Merge all points cloud file to a entire file*************************************************************
 
-color_info_path = (
-    r"/Users/guoan/Documents/GitHub/Arma3_Depth/Arma3_Forest/color_info.json"
+# input_file_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Filted"
+# output_file_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3"
+# merge_point_cloud(input_file_path, output_file_path)
+# ************************************************************End*************************************************************************************
+# ---------------------------------------------------------------------------------------------------------------------------------------------------#
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------#
+# ***********************************************Used to Reduce points cloud size*********************************************************************
+
+# in_file_name = (
+#     r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-Filted.ply"
+# )
+# out_file_name = (
+#     r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-0.1.ply"
+# )
+# voxel_point_cloud(in_file_name, out_file_name, 0.1)
+
+# ************************************************************End*************************************************************************************
+# ---------------------------------------------------------------------------------------------------------------------------------------------------#
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------#
+# ************************************Used to remove unused point in points cloud (animals, flying)***************************************************
+
+in_file_name = (
+    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2.ply"
 )
-color_dict_path = (
-    r"/Users/guoan/Documents/GitHub/Arma3_Depth/Arma3_Forest/color_dict.json"
+out_file_name = (
+    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-Filted.ply"
 )
-unique_object_json_path = (
-    r"/Users/guoan/Documents/GitHub/Arma3_Depth/Arma3_Forest/unique_object_json.json"
-)
-load_color_dict(color_dict_path)
-load_ref_json_file(color_info_path)
-# unused_list = get_unused_object_list(unique_object_json)
-# remove_unused_object(in_path_name, out_path_name, color_info_json, unused_list)
-# merge_two_object_info(path1, path2, path3)
+color_info_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Object_Info\color_info.json"
+unique_object_json_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Object_Info\unique_object_json.json"
+unique_object_json = load_ref_json_file(unique_object_json_path)
+color_info_json = load_ref_json_file(color_info_path)
+unused_list = get_unused_object_list(unique_object_json)
+remove_unused_object(in_file_name, out_file_name, color_info_json, unused_list)
 
-# path1 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-2.ply"
-# path2 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-2-Changed.ply"
-# path3 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Object_Info\color_info.json"
-# path4 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info\object_info.json"
+# ************************************************************End*************************************************************************************
+# ---------------------------------------------------------------------------------------------------------------------------------------------------#
 
-# change_points_cloud_color(path1, path2, path3, path4)
 
-# get_object_above_height("0.2.ply", color_info_json, 220, True)
-# voxel_point_cloud(out_path_name, "./building-2-0.1.ply", 0.1)
-# process_object_list("object_list.pkl", "unique_object_json.json")
+# ---------------------------------------------------------------------------------------------------------------------------------------------------#
+# *********************************************Used to merged two points cloud************************************************************************
 
-# color_dict = load_color_dict("color_dict.json")
-# object_list = load_object_list("object_list.pkl","3.txt")
-# build_refer_json(color_dict=color_dict, object_list=object_list, store_file_path="./color_info.json")
+# base_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-1\Object_Info"
+# add_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Object_Info"
+# output_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info"
+# merge_two_object_info(base_path, add_path, output_path)
 
-# merge_two_point_cloud_file(r"F:\Arma3\PointsCloud\Arma3_Forest\1\PointsCloud",r"F:\Arma3\PointsCloud\Arma3_Forest\1\Add")
-# wipe_out_height(path_name, file_name, 0, 250)
-# voxel_point_cloud(path_name, file_name, 0.1)
-# test_point_cloud(r"./Filted")
-# wipe_out_point_cloud(work_dir, output_dir, 8450, 18750, 100, 100, rectify=False)
-# merge_point_cloud("./Filted")
+# pcd_input_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-2.ply"
+# pcd_output_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-2-Changed.ply"
+# origin_color_info_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Object_Info\color_info.json"
+# new_object_info_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info\object_info.json"
+# change_points_cloud_color(pcd_input_path, pcd_output_path, origin_color_info_path, new_object_info_path)
+
+# ************************************************************End*************************************************************************************
+# ---------------------------------------------------------------------------------------------------------------------------------------------------#
