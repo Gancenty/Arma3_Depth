@@ -164,7 +164,7 @@ def load_object_list(file_path: str, output_path=None):
     if os.path.exists(file_path):
         with open(file_path, "rb") as file:
             object_list = pickle.load(file)
-            print(f"{file_path}:{len(object_list)}")
+            print(f"Object_list {file_path}:{len(object_list)}")
             if output_path is None:
                 return object_list
             with open(output_path, "w") as out_file:
@@ -575,12 +575,14 @@ def merge_two_object_info(info_path_base, info_path_add, output_object_path):
     new_object_list_path = os.path.join(output_object_path, "object_list.pkl")
     new_object_list_txt_path = os.path.join(output_object_path, "object_list.txt")
 
+    print("-"*20 + "Loading  1  Files" + "-"*20)
     color_dict_1 = load_color_dict(color_dict_path_1)
     object_list_1 = load_object_list(object_list_path_1)
     color_info_1 = load_ref_json_file(color_info_path_1)
     object_info_1 = load_ref_json_file(object_info_path_1)
     unique_object_json_1 = load_ref_json_file(unique_object_path_1)
 
+    print("-"*20 + "Loading  2  Files" + "-"*20)
     color_dict_2 = load_color_dict(color_dict_path_2)
     object_list_2 = load_object_list(object_list_path_2)
     color_info_2 = load_ref_json_file(color_info_path_2)
@@ -608,7 +610,8 @@ def merge_two_object_info(info_path_base, info_path_add, output_object_path):
             color_info_1[hex_color_str] = new_object
             object_info_1[object_name] = new_object
             unique_object_json_1[object_name] = new_index
-
+    
+    print("-"*20 + "Saving new Files" + "-"*20)
     print(f"New Color Dict saved in {new_color_dict_path}, Len:{len(color_dict_1)}")
     color_dict_1 = {str(k): v for k, v in color_dict_1.items()}
     with open(new_color_dict_path, "w") as out_file:
@@ -635,6 +638,7 @@ def merge_two_object_info(info_path_base, info_path_add, output_object_path):
     with open(new_object_list_txt_path, "w") as out_file:
         for item in object_list_1:
             out_file.write(f"{item}\n")
+    print("-"*20 + "      over!     " + "-"*20)
 
 
 def change_points_cloud_color(pcd_input_path, pcd_output_path, color_info_path_origin, object_info_path_new):
@@ -645,7 +649,7 @@ def change_points_cloud_color(pcd_input_path, pcd_output_path, color_info_path_o
     for i, item in enumerate((tqdm(color, desc="Processing .ply files"))):
         object_name = color_to_object(color[i], color_info_origin)
         if object_name != False:
-            new_color = object_info_new[object_name]
+            new_color = object_info_new[object_name]["color"]
             color[i] = np.array(new_color) / 255.0
         else:
             print("x" * 20 + "ERROR!" + "x" * 20)
@@ -683,11 +687,16 @@ unique_object_json_path = (
 
 # unused_list = get_unused_object_list(unique_object_json)
 # remove_unused_object(in_path_name, out_path_name, color_info_json, unused_list)
-# merge_two_object_info(path1, path2, path3)
+merge_two_object_info(path1, path2, path3)
+
+path1 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-2.ply"
+path2 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-2-Changed.ply"
+path3 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Object_Info\color_info.json"
+path4 = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info\object_info.json"
+
+change_points_cloud_color(path1, path2, path3, path4)
 
 # get_object_above_height("0.2.ply", color_info_json, 220, True)
-color_json = load_ref_json_file(r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info\color_info.json")
-test_color_mapping(r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\1", color_json)
 # voxel_point_cloud(out_path_name, "./building-2-0.1.ply", 0.1)
 # process_object_list("object_list.pkl", "unique_object_json.json")
 
