@@ -700,31 +700,26 @@ def voxel_point_cloud(input_file: str, output_path: str, color_info: dict, voxel
             color_array = colors[i]
 
             if object_name not in object_to_pcd.keys():
-                object_to_pcd[object_name] = [point_array, normal_array, color_array]
+                object_to_pcd[object_name] = [[point_array], [normal_array], [color_array]]
             else:
-                all_point_array, all_normal_array, all_color_array = object_to_pcd[
-                    object_name
-                ]
-                all_points = np.vstack((point_array, all_point_array))
-                all_normals = np.vstack((normal_array, all_normal_array))
-                all_colors = np.vstack((color_array, all_color_array))
-                object_to_pcd[object_name] = [all_points, all_normals, all_colors]
+                object_to_pcd[object_name][0].append(point_array)
+                object_to_pcd[object_name][1].append(normal_array)
+                object_to_pcd[object_name][2].append(color_array)
         else:
             print("x" * 20 + "ERROR!" + "x" * 20)
-    object_to_pcd_filted = {}
+
+    total_pcd = o3d.geometry.PointCloud()
     for object_name, array in object_to_pcd.items():
         filtered_pcd = o3d.geometry.PointCloud()
-        filtered_pcd.points = o3d.utility.Vector3dVector(array[0])
-        filtered_pcd.normals = o3d.utility.Vector3dVector(array[1])
-        filtered_pcd.colors = o3d.utility.Vector3dVector(array[2])
+        filtered_pcd.points = o3d.utility.Vector3dVector(np.vstack(array[0]))
+        filtered_pcd.normals = o3d.utility.Vector3dVector(np.vstack(array[1]))
+        filtered_pcd.colors = o3d.utility.Vector3dVector(np.vstack(array[2]))
         filtered_pcd = filtered_pcd.voxel_down_sample(voxel_size)
-        object_to_pcd_filted[object_name] = filtered_pcd
-    del object_to_pcd
-    total_pcd = o3d.geometry.PointCloud()
-    for object_name, pcd in object_to_pcd_filted.items():
+        
+        total_pcd = total_pcd + filtered_pcd
         file_name = os.path.join(output_path, object_name + ".ply")
-        o3d.io.write_point_cloud(file_name, pcd)
-        total_pcd = total_pcd + pcd
+        o3d.io.write_point_cloud(file_name, filtered_pcd)
+        del filtered_pcd
 
     file_name = os.path.join(output_path, "Total.ply")
     o3d.io.write_point_cloud(file_name, total_pcd)
