@@ -1,9 +1,6 @@
 from pcd_process import *
 
 
-
-
-
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
 # ************************************First to Use to merge same object and remove unused  points*****************************************************
 
@@ -23,9 +20,11 @@ from pcd_process import *
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
 # *******************************************Merge all points cloud file to a entire file*************************************************************
 
-# input_file_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Filted"
-# output_file_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3"
-# merge_point_cloud(input_file_path, output_file_path)
+# input_file_path = (
+#     r"F:\Temp"
+# )
+# output_file_path = r"F:"
+# merge_point_cloud(input_file_path, output_file_path, need_refine=False)
 
 # ************************************************************End*************************************************************************************
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -34,17 +33,17 @@ from pcd_process import *
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
 # ***********************************************Used to Reduce points cloud size*********************************************************************
 
-in_file_name = (
-    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-Filted.ply"
-)
-out_path_name = (
-    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-0.1.ply"
-)
-color_info_path = (
-    r"/Users/guoan/Documents/GitHub/Arma3_Depth/Arma3_Forest/color_info.json"
-)
-color_info = load_ref_json_file(color_info_path)
-voxel_point_cloud(in_file_name, out_path_name, color_info, 0.1)
+# in_file_name = (
+#     r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-Filted.ply"
+# )
+# out_path_name = (
+#     r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-0.1.ply"
+# )
+# color_info_path = (
+#     r"/Users/guoan/Documents/GitHub/Arma3_Depth/Arma3_Forest/color_info.json"
+# )
+# color_info = load_ref_json_file(color_info_path)
+# voxel_point_cloud(in_file_name, out_path_name, color_info, 0.1)
 
 # ************************************************************End*************************************************************************************
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -98,13 +97,13 @@ voxel_point_cloud(in_file_name, out_path_name, color_info, 0.1)
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
 # *********************************************Rectify points cloud to cut unneccssary boundary*******************************************************
 
-# input_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3"
-# output_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3"
-# init_x_coord = 8500
-# init_y_coord = 18100
-# height = 300
-# width = 300
-# wipe_out_point_cloud(input_path, output_path, init_x_coord, init_y_coord, width, height)
+input_path = r"F:"
+output_path = r"F:\Temp"
+init_x_coord = 8500
+init_y_coord = 18100
+height = 300
+width = 300
+wipe_out_point_cloud(input_path, output_path, init_x_coord, init_y_coord, width, height)
 
 # ************************************************************End*************************************************************************************
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#

@@ -85,7 +85,7 @@ def wipe_out_point_cloud(
             o3d.io.write_point_cloud(output_file, pcd)
 
 
-def merge_point_cloud(input_path, output_path):
+def merge_point_cloud(input_path, output_path, need_refine=True):
     folder_path = input_path
     total_pcd = o3d.geometry.PointCloud()
     ply_files = [
@@ -97,13 +97,15 @@ def merge_point_cloud(input_path, output_path):
         file_path = os.path.join(folder_path, filename)
         pcd = o3d.io.read_point_cloud(file_path)
         total_pcd = total_pcd + pcd
-        if (cnt % 100) == 0:
-            total_pcd = refine_point_cloud(total_pcd)
+        if (cnt % 100) == 0 and (cnt != 0):
+            if need_refine:
+                total_pcd = refine_point_cloud(total_pcd)
             output_file_name = os.path.join(output_path, f"merged-{cnt}.ply")
             o3d.io.write_point_cloud(output_file_name, total_pcd)
             print(f"Refined: Index:{index}-FileName:{filename}")
         cnt += 1
-    total_pcd = refine_point_cloud(total_pcd)
+    if need_refine:
+        total_pcd = refine_point_cloud(total_pcd)
     output_file_name = os.path.join(output_path, f"merged.ply")
     o3d.io.write_point_cloud(output_file_name, total_pcd)
 
