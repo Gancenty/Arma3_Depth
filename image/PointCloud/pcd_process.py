@@ -276,6 +276,9 @@ def build_color_info_json(color_dict: dict, object_list: list, store_file_path: 
             ref_dict[hex_color_str] = info_dict
         else:
             print(f"{object_info} and {index} is not in color_dict")
+    print(
+        f"{colorama.Fore.YELLOW}Color_info {colorama.Fore.RESET}{store_file_path}: {colorama.Fore.YELLOW}{len(ref_dict)}"
+    )
     with open(store_file_path, "w") as file:
         json.dump(ref_dict, file, sort_keys=True, indent=4)
 
@@ -297,9 +300,6 @@ def build_unique_object_json(object_list_file_path, output_path):
     if os.path.exists(object_list_file_path):
         with open(object_list_file_path, "rb") as file:
             object_list = pickle.load(file)
-            print(
-                f"{colorama.Fore.RED}Unique_object {colorama.Fore.RESET}{object_list_file_path}: {colorama.Fore.RED}{len(object_list)}"
-            )
             for item, index in object_list:
                 match = re.search(r"\b\w+\.p3d\b", item)
                 if match:
@@ -308,6 +308,9 @@ def build_unique_object_json(object_list_file_path, output_path):
                         unique_object[object_name] = index
                 else:
                     unique_object[item] = index
+        print(
+            f"{colorama.Fore.RED}Unique_object {colorama.Fore.RESET}{output_path}: {colorama.Fore.RED}{len(unique_object)}"
+        )
         with open(output_path, "w") as out_file:
             json.dump(unique_object, out_file, sort_keys=True, indent=4)
         return unique_object
@@ -336,6 +339,9 @@ def build_object_info_json(
         info = color_info[hex_color_str]
         info["hex_color"] = hex_color_str
         objects_info[object_name] = info
+    print(
+        f"{colorama.Fore.GREEN}Objects_info {colorama.Fore.RESET}{output_path}: {colorama.Fore.GREEN}{len(objects_info)}"
+    )
     with open(output_path, "w") as out_file:
         json.dump(objects_info, out_file, sort_keys=True, indent=4)
     return objects_info
