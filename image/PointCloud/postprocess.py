@@ -719,7 +719,7 @@ def voxel_point_cloud(input_file: str, output_path: str, color_info: dict, voxel
         filtered_pcd.colors = o3d.utility.Vector3dVector(array[2])
         filtered_pcd = filtered_pcd.voxel_down_sample(voxel_size)
         object_to_pcd_filted[object_name] = filtered_pcd
-
+    del object_to_pcd
     total_pcd = o3d.geometry.PointCloud()
     for object_name, pcd in object_to_pcd_filted.items():
         file_name = os.path.join(output_path, object_name + ".ply")
