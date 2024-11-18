@@ -458,29 +458,27 @@ def refine_colored_point_cloud(
             else:
                 print("x" * 20 + "ERROR!" + "x" * 20)
 
-        total_pcd = o3d.geometry.PointCloud()
         for object_name, array in object_to_pcd.items():
             filtered_pcd = o3d.geometry.PointCloud()
             filtered_pcd.points = o3d.utility.Vector3dVector(np.vstack(array[0]))
             filtered_pcd.normals = o3d.utility.Vector3dVector(np.vstack(array[1]))
             filtered_pcd.colors = o3d.utility.Vector3dVector(np.vstack(array[2]))
-            filtered_pcd = filtered_pcd.voxel_down_sample(voxel_size)
-            total_pcd = total_pcd + filtered_pcd
-
+            
             file_root = os.path.join(output_path, "class")
             if not os.path.exists(file_root):
                 os.mkdir(file_root)
-            file_path = os.path.join(file_root, object_name + ".ply")
-
+            if object_name != "<NULL-object>":
+                file_path = os.path.join(file_root, object_name + ".ply")
+            else:
+                file_path = os.path.join(file_root, "NULL.ply")
             if os.path.isfile(file_path):
                 origin_pcd = o3d.io.read_point_cloud(file_path)
                 filtered_pcd = filtered_pcd + origin_pcd
+            
+            filtered_pcd = filtered_pcd.voxel_down_sample(voxel_size)
             o3d.io.write_point_cloud(file_path, filtered_pcd)
             del filtered_pcd
-
-        file_path = os.path.join(output_path, filename.split(".")[0] + "-Filtered.ply")
-        o3d.io.write_point_cloud(file_path, total_pcd)
-
+        
         points = points[mask]
         normals = normals[mask]
         colors = colors[mask]
