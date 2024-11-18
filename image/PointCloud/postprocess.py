@@ -395,6 +395,7 @@ def refine_colored_point_cloud(
     color_dict: dict,
     color_info: dict,
     unique_object: dict,
+    voxel_size=0.1,
 ):
     """Used to merge the closed description in arma3 object name,\n
 
@@ -421,6 +422,7 @@ def refine_colored_point_cloud(
         normals = np.asarray(pcd.normals)
         colors = np.asarray(pcd.colors)
         mask = np.ones(len(colors), dtype=bool)
+        object_to_pcd = {}
         for i, item in enumerate((tqdm(colors, desc="Processing .ply files"))):
             object_name = color_to_object(colors[i], color_info)
             if object_name != False:
@@ -429,8 +431,48 @@ def refine_colored_point_cloud(
                     continue
                 color_index = unique_object[object_name]
                 colors[i] = np.array(color_dict[str(color_index)]) / 255.0
+
+                point_array = points[i]
+                normal_array = normals[i]
+                color_array = colors[i]
+
+                if object_name not in object_to_pcd.keys():
+                    object_to_pcd[object_name] = [
+                        [point_array],
+                        [normal_array],
+                        [color_array],
+                    ]
+                else:
+                    object_to_pcd[object_name][0].append(point_array)
+                    object_to_pcd[object_name][1].append(normal_array)
+                    object_to_pcd[object_name][2].append(color_array)
+
             else:
                 print("x" * 20 + "ERROR!" + "x" * 20)
+
+        total_pcd = o3d.geometry.PointCloud()
+        for object_name, array in object_to_pcd.items():
+            filtered_pcd = o3d.geometry.PointCloud()
+            filtered_pcd.points = o3d.utility.Vector3dVector(np.vstack(array[0]))
+            filtered_pcd.normals = o3d.utility.Vector3dVector(np.vstack(array[1]))
+            filtered_pcd.colors = o3d.utility.Vector3dVector(np.vstack(array[2]))
+            filtered_pcd = filtered_pcd.voxel_down_sample(voxel_size)
+            total_pcd = total_pcd + filtered_pcd
+
+            file_root = os.path.join(output_path, "class")
+            if not os.path.exists(file_root):
+                os.mkdir(file_root)
+            file_path = os.path.join(file_root, object_name + ".ply")
+
+            if os.path.isfile(file_path):
+                origin_pcd = o3d.io.read_point_cloud(file_path)
+                filtered_pcd = filtered_pcd + origin_pcd
+            o3d.io.write_point_cloud(file_path, filtered_pcd)
+            del filtered_pcd
+
+        file_path = os.path.join(output_path, filename.split(".")[0] + "-Filtered.ply")
+        o3d.io.write_point_cloud(file_path, total_pcd)
+
         points = points[mask]
         normals = normals[mask]
         colors = colors[mask]
@@ -700,7 +742,11 @@ def voxel_point_cloud(input_file: str, output_path: str, color_info: dict, voxel
             color_array = colors[i]
 
             if object_name not in object_to_pcd.keys():
-                object_to_pcd[object_name] = [[point_array], [normal_array], [color_array]]
+                object_to_pcd[object_name] = [
+                    [point_array],
+                    [normal_array],
+                    [color_array],
+                ]
             else:
                 object_to_pcd[object_name][0].append(point_array)
                 object_to_pcd[object_name][1].append(normal_array)
@@ -715,7 +761,7 @@ def voxel_point_cloud(input_file: str, output_path: str, color_info: dict, voxel
         filtered_pcd.normals = o3d.utility.Vector3dVector(np.vstack(array[1]))
         filtered_pcd.colors = o3d.utility.Vector3dVector(np.vstack(array[2]))
         filtered_pcd = filtered_pcd.voxel_down_sample(voxel_size)
-        
+
         total_pcd = total_pcd + filtered_pcd
         file_name = os.path.join(output_path, object_name + ".ply")
         o3d.io.write_point_cloud(file_name, filtered_pcd)
@@ -758,17 +804,17 @@ logger = setup_logger()
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
 # ***********************************************Used to Reduce points cloud size*********************************************************************
 
-in_file_name = (
-    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-Filted.ply"
-)
-out_path_name = (
-    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-0.1.ply"
-)
-color_info_path = (
-    r"/Users/guoan/Documents/GitHub/Arma3_Depth/Arma3_Forest/color_info.json"
-)
-color_info = load_ref_json_file(color_info_path)
-voxel_point_cloud(in_file_name, out_path_name, color_info, 0.1)
+# in_file_name = (
+#     r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-Filted.ply"
+# )
+# out_path_name = (
+#     r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-0.1.ply"
+# )
+# color_info_path = (
+#     r"/Users/guoan/Documents/GitHub/Arma3_Depth/Arma3_Forest/color_info.json"
+# )
+# color_info = load_ref_json_file(color_info_path)
+# voxel_point_cloud(in_file_name, out_path_name, color_info, 0.1)
 
 # ************************************************************End*************************************************************************************
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
