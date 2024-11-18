@@ -120,12 +120,6 @@ def test_point_cloud(input_path):
         print(arr.shape)
 
 
-def voxel_point_cloud(input_file, output_file, voxel_size):
-    points = o3d.io.read_point_cloud(input_file)
-    points = points.voxel_down_sample(voxel_size)
-    o3d.io.write_point_cloud(output_file, points)
-
-
 def wipe_out_height(path_name, file_name, output_file, z_min, z_max):
     file_path = os.path.join(path_name, file_name)
     pcd = o3d.io.read_point_cloud(file_path)
@@ -691,6 +685,51 @@ def change_points_cloud_color(
     o3d.io.write_point_cloud(pcd_output_path, pcd)
 
 
+def voxel_point_cloud(input_file: str, output_path: str, color_info: dict, voxel_size):
+    pcd = o3d.io.read_point_cloud(input_file)
+    object_to_pcd = {}
+    points = np.asarray(pcd.points)
+    normals = np.asarray(pcd.normals)
+    colors = np.asarray(pcd.colors)
+
+    for i, item in enumerate((tqdm(colors, desc="Processing .ply files"))):
+        object_name = color_to_object(colors[i], color_info)
+        if object_name != False:
+            point_array = points[i]
+            normal_array = normals[i]
+            color_array = colors[i]
+
+            if object_name not in object_to_pcd.keys():
+                object_to_pcd[object_name] = [point_array, normal_array, color_array]
+            else:
+                all_point_array, all_normal_array, all_color_array = object_to_pcd[
+                    object_name
+                ]
+                all_points = np.vstack((point_array, all_point_array))
+                all_normals = np.vstack((normal_array, all_normal_array))
+                all_colors = np.vstack((color_array, all_color_array))
+                object_to_pcd[object_name] = [all_points, all_normals, all_colors]
+        else:
+            print("x" * 20 + "ERROR!" + "x" * 20)
+    object_to_pcd_filted = {}
+    for object_name, array in object_to_pcd.items():
+        filtered_pcd = o3d.geometry.PointCloud()
+        filtered_pcd.points = o3d.utility.Vector3dVector(array[0])
+        filtered_pcd.normals = o3d.utility.Vector3dVector(array[1])
+        filtered_pcd.colors = o3d.utility.Vector3dVector(array[2])
+        filtered_pcd = filtered_pcd.voxel_down_sample(voxel_size)
+        object_to_pcd_filted[object_name] = filtered_pcd
+
+    total_pcd = o3d.geometry.PointCloud()
+    for object_name, pcd in object_to_pcd_filted.items():
+        file_name = os.path.join(output_path, object_name + ".ply")
+        o3d.io.write_point_cloud(file_name, pcd)
+        total_pcd = total_pcd + pcd
+
+    file_name = os.path.join(output_path, "Total.ply")
+    o3d.io.write_point_cloud(file_name, total_pcd)
+
+
 logger = setup_logger()
 
 
@@ -716,6 +755,7 @@ logger = setup_logger()
 # input_file_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Filted"
 # output_file_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3"
 # merge_point_cloud(input_file_path, output_file_path)
+
 # ************************************************************End*************************************************************************************
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
 
@@ -723,13 +763,17 @@ logger = setup_logger()
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
 # ***********************************************Used to Reduce points cloud size*********************************************************************
 
-# in_file_name = (
-#     r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-Filted.ply"
-# )
-# out_file_name = (
-#     r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-0.1.ply"
-# )
-# voxel_point_cloud(in_file_name, out_file_name, 0.1)
+in_file_name = (
+    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-Filted.ply"
+)
+out_path_name = (
+    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-2\Building-2-0.1.ply"
+)
+color_info_path = (
+    r"/Users/guoan/Documents/GitHub/Arma3_Depth/Arma3_Forest/color_info.json"
+)
+color_info = load_ref_json_file(color_info_path)
+voxel_point_cloud(in_file_name, out_path_name, color_info, 0.1)
 
 # ************************************************************End*************************************************************************************
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -758,23 +802,23 @@ logger = setup_logger()
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
 # *********************************************Used to merged two points cloud************************************************************************
 
-base_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info"
-add_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Object_Info"
-output_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info"
-merge_two_object_info(base_path, add_path, output_path)
+# base_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info"
+# add_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Object_Info"
+# output_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info"
+# merge_two_object_info(base_path, add_path, output_path)
 
-# only convert the color of points cloud file in add_path to desired color info file
-pcd_input_path = (
-    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Building-3-Filted.ply"
-)
-pcd_output_path = (
-    r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-3-Filted.ply"
-)
-origin_color_info_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Object_Info\color_info.json"
-new_object_info_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info\object_info.json"
-change_points_cloud_color(
-    pcd_input_path, pcd_output_path, origin_color_info_path, new_object_info_path
-)
+# # only convert the color of points cloud file in add_path to desired color info file
+# pcd_input_path = (
+#     r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Building-3-Filted.ply"
+# )
+# pcd_output_path = (
+#     r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Building-3-Filted.ply"
+# )
+# origin_color_info_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Colored-3\Object_Info\color_info.json"
+# new_object_info_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\1-2\Object_Info\object_info.json"
+# change_points_cloud_color(
+#     pcd_input_path, pcd_output_path, origin_color_info_path, new_object_info_path
+# )
 
 # ************************************************************End*************************************************************************************
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -790,5 +834,6 @@ change_points_cloud_color(
 # height = 300
 # width = 300
 # wipe_out_point_cloud(input_path, output_path, init_x_coord, init_y_coord, width, height)
+
 # ************************************************************End*************************************************************************************
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
