@@ -144,7 +144,7 @@ def wipe_out_height(path_name, file_name, output_file, z_min, z_max):
     o3d.io.write_point_cloud(output_file, filtered_pcd)
 
 
-def merge_two_point_cloud_file(folder1, folder2, output_path):
+def merge_two_point_cloud_file(folder1, folder2, output_path, voxel_size=0.1):
     ply_files1 = [
         filename for filename in os.listdir(folder1) if filename.endswith(".ply")
     ]
@@ -162,6 +162,7 @@ def merge_two_point_cloud_file(folder1, folder2, output_path):
         pcd1 = o3d.io.read_point_cloud(file_path1)
         pcd2 = o3d.io.read_point_cloud(file_path2)
         total_pcd = pcd1 + pcd2
+        total_pcd = total_pcd.voxel_down_sample(voxel_size)
         file_path = os.path.join(output_path, filename)
         o3d.io.write_point_cloud(file_path, total_pcd)
 
@@ -463,7 +464,7 @@ def refine_colored_point_cloud(
             filtered_pcd.points = o3d.utility.Vector3dVector(np.vstack(array[0]))
             filtered_pcd.normals = o3d.utility.Vector3dVector(np.vstack(array[1]))
             filtered_pcd.colors = o3d.utility.Vector3dVector(np.vstack(array[2]))
-            
+
             file_root = os.path.join(output_path, "class")
             if not os.path.exists(file_root):
                 os.mkdir(file_root)
@@ -474,11 +475,11 @@ def refine_colored_point_cloud(
             if os.path.isfile(file_path):
                 origin_pcd = o3d.io.read_point_cloud(file_path)
                 filtered_pcd = filtered_pcd + origin_pcd
-            
+
             filtered_pcd = filtered_pcd.voxel_down_sample(voxel_size)
             o3d.io.write_point_cloud(file_path, filtered_pcd)
             del filtered_pcd
-        
+
         points = points[mask]
         normals = normals[mask]
         colors = colors[mask]
@@ -510,11 +511,10 @@ def remove_unused_object(
     mask = np.ones(len(colors), dtype=bool)
     for i, color in enumerate(tqdm(colors, desc="Processing .ply files")):
         object_name = color_to_object(color, color_info)
+        assert object_name != False, f"color_to_object error, object name:{object_name}"
         if object_name != False:
             if object_name in unused_object_list:
                 mask[i] = False  # 标记需要删除的点
-        else:
-            print("ERROR!")
     points = points[mask]
     normals = normals[mask]
     colors = colors[mask]
@@ -540,10 +540,9 @@ def get_object_above_height(file_path, color_info, height, detailed=False):
     for i, points in enumerate(tqdm(points, desc="Processing .ply files")):
         if points[2] > height:
             object_name = color_to_object(colors[i], color_info)
+            assert object_name != False, f"color_to_object error, object name:{object_name}"
             if object_name != False:
                 object_list.appen(object_name)
-            else:
-                print("x" * 20 + "ERROR!" + "x" * 20)
     print(object_list)
     return object_list
 
@@ -724,11 +723,10 @@ def change_points_cloud_color(
     color = np.asarray(pcd.colors)
     for i, item in enumerate((tqdm(color, desc="Processing .ply files"))):
         object_name = color_to_object(color[i], color_info_origin)
+        assert object_name != False, f"color_to_object error, object name:{object_name}"
         if object_name != False:
             new_color = object_info_new[object_name]["color"]
             color[i] = np.array(new_color) / 255.0
-        else:
-            print("x" * 20 + "ERROR!" + "x" * 20)
     pcd.colors = o3d.utility.Vector3dVector(color)
     o3d.io.write_point_cloud(pcd_output_path, pcd)
 
@@ -742,6 +740,7 @@ def voxel_point_cloud(input_file: str, output_path: str, color_info: dict, voxel
 
     for i, item in enumerate((tqdm(colors, desc="Processing .ply files"))):
         object_name = color_to_object(colors[i], color_info)
+        assert object_name != False, f"color_to_object error, object name:{object_name}"
         if object_name != False:
             point_array = points[i]
             normal_array = normals[i]
@@ -757,8 +756,6 @@ def voxel_point_cloud(input_file: str, output_path: str, color_info: dict, voxel
                 object_to_pcd[object_name][0].append(point_array)
                 object_to_pcd[object_name][1].append(normal_array)
                 object_to_pcd[object_name][2].append(color_array)
-        else:
-            print("x" * 20 + "ERROR!" + "x" * 20)
 
     total_pcd = o3d.geometry.PointCloud()
     for object_name, array in object_to_pcd.items():
@@ -776,5 +773,7 @@ def voxel_point_cloud(input_file: str, output_path: str, color_info: dict, voxel
     file_name = os.path.join(output_path, "Total.ply")
     o3d.io.write_point_cloud(file_name, total_pcd)
 
+
+def 
 
 logger = setup_logger()
