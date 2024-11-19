@@ -68,15 +68,18 @@ def wipe_out_point_cloud(
         if rectify:
             points = np.asarray(pcd.points)
             normals = np.asarray(pcd.normals)
+            colors = np.asarray(pcd.colors)
             in_box_mask = np.all(
                 (points >= start_point) & (points <= end_point), axis=1
             )
             filtered_points = points[in_box_mask]
             filtered_normals = normals[in_box_mask]
+            filtered_colors = colors[in_box_mask]
 
             filtered_pcd = o3d.geometry.PointCloud()
             filtered_pcd.points = o3d.utility.Vector3dVector(filtered_points)
             filtered_pcd.normals = o3d.utility.Vector3dVector(filtered_normals)
+            filtered_pcd.colors = o3d.utility.Vector3dVector(filtered_colors)
 
             output_file = os.path.join(output_path, filename)
             o3d.io.write_point_cloud(output_file, filtered_pcd)
@@ -540,7 +543,9 @@ def get_object_above_height(file_path, color_info, height, detailed=False):
     for i, points in enumerate(tqdm(points, desc="Processing .ply files")):
         if points[2] > height:
             object_name = color_to_object(colors[i], color_info)
-            assert object_name != False, f"color_to_object error, object name:{object_name}"
+            assert (
+                object_name != False
+            ), f"color_to_object error, object name:{object_name}"
             if object_name != False:
                 object_list.appen(object_name)
     print(object_list)
@@ -773,7 +778,5 @@ def voxel_point_cloud(input_file: str, output_path: str, color_info: dict, voxel
     file_name = os.path.join(output_path, "Total.ply")
     o3d.io.write_point_cloud(file_name, total_pcd)
 
-
-def 
 
 logger = setup_logger()

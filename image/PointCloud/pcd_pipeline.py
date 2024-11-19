@@ -97,13 +97,15 @@ from pcd_process import *
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
 # *********************************************Rectify points cloud to cut unneccssary boundary*******************************************************
 
-input_path = r"F:"
-output_path = r"F:\Temp"
+input_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Wiped"
+output_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Wiped"
 init_x_coord = 8500
 init_y_coord = 18100
 height = 300
 width = 300
-wipe_out_point_cloud(input_path, output_path, init_x_coord, init_y_coord, width, height)
+wipe_out_point_cloud(
+    input_path, output_path, init_x_coord, init_y_coord, width, height, rectify=True
+)
 
 # ************************************************************End*************************************************************************************
 # ---------------------------------------------------------------------------------------------------------------------------------------------------#
