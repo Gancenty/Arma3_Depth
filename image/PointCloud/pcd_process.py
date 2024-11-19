@@ -144,7 +144,7 @@ def wipe_out_height(path_name, file_name, output_file, z_min, z_max):
     o3d.io.write_point_cloud(output_file, filtered_pcd)
 
 
-def merge_two_point_cloud_file(folder1, folder2, output_path):
+def merge_two_point_cloud_file(folder1, folder2, output_path, voxel_size=0.1):
     ply_files1 = [
         filename for filename in os.listdir(folder1) if filename.endswith(".ply")
     ]
@@ -162,6 +162,7 @@ def merge_two_point_cloud_file(folder1, folder2, output_path):
         pcd1 = o3d.io.read_point_cloud(file_path1)
         pcd2 = o3d.io.read_point_cloud(file_path2)
         total_pcd = pcd1 + pcd2
+        total_pcd = total_pcd.voxel_down_sample(voxel_size)
         file_path = os.path.join(output_path, filename)
         o3d.io.write_point_cloud(file_path, total_pcd)
 
@@ -772,5 +773,7 @@ def voxel_point_cloud(input_file: str, output_path: str, color_info: dict, voxel
     file_name = os.path.join(output_path, "Total.ply")
     o3d.io.write_point_cloud(file_name, total_pcd)
 
+
+def 
 
 logger = setup_logger()
