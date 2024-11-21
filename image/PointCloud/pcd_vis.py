@@ -2,8 +2,8 @@ import open3d as o3d
 import numpy as np
 
 # 加载点云文件
-pcd = o3d.io.read_point_cloud(r"total-0.04.ply")  # 替换成你的文件路径
-a = pcd.clo
+pcd = o3d.io.read_point_cloud(r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Building\Wiped\Building-0.1.ply")  # 替换成你的文件路径
+
 # # 设置稀疏采样的步长，例如每隔100个点保留一个点
 # # sampling_step = 50
 # # pcd_downsampled = pcd.uniform_down_sample(sampling_step)

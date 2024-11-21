@@ -239,12 +239,12 @@ class Arma3_PointsCloud:
 
 if __name__ == "__main__":
     points_cloud_store_path = (
-        r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Forest\Colored-5\Forest"
+        r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Forest\Colored-7\Forest"
     )
-    color_file_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Forest\Colored-5\Object_Info\color_dict.json"
-    object_file_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Forest\Colored-5\Object_Info\object_list.pkl"
+    color_file_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Forest\Colored-7\Object_Info\color_dict.json"
+    object_file_path = r"E:\E_Disk_Files\Arma3_PointCloud\Colored_Forest\Colored-7\Object_Info\object_list.pkl"
     pcl = Arma3_PointsCloud(
-        start_x=8400,
+        start_x=8600,
         start_y=18800,
         width=100,
         height=100,
