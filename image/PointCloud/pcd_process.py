@@ -49,8 +49,8 @@ def wipe_out_point_cloud(
     folder_path = input_path
     x_min = x - reserved
     y_min = y - reserved
-    x_max = x + width + reserved * 2
-    y_max = y + height + reserved * 2
+    x_max = x + width + reserved
+    y_max = y + height + reserved
     z_min = 0
     z_max = 400
     start_point = np.array([x_min, y_min, z_min])  # 替换为区域的起点坐标
@@ -222,6 +222,9 @@ def load_ref_json_file(file_name):
     else:
         return None
 
+def save_ref_json_file(dict_object, file_path):
+    with open(file_path, "w") as out_file:
+        json.dump(dict_object, out_file, sort_keys=True, indent=4)
 
 def rgb_to_hex(rgb):
     """Used to covert rgb[0-255] the hex value
@@ -233,6 +236,17 @@ def rgb_to_hex(rgb):
         _type_: _description_
     """
     return "#{:02X}{:02X}{:02X}".format(rgb[0], rgb[1], rgb[2])
+
+def hex_to_rgb(hex):
+    """Used to covert rgb[0-255] the hex value
+
+    Args:
+        rgb (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    return [int(hex[i:i+2], 16) for i in (1, 3, 5)]
 
 
 def color_to_object(normalized_points_color, color_info_dict: dict):

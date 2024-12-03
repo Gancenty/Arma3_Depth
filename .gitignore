@@ -1,5 +1,6 @@
 *.log
 *.ply
+*.glb
 /*.txt
 /PointsCloud
 /Filted

@@ -1,0 +1,753 @@
+{
+    "atm": {
+        "color": [
+            15,
+            212,
+            221
+        ],
+        "hex_color": "#0FD4DD",
+        "object_name": [
+            "atm_02_f"
+        ]
+    },
+    "barrel": {
+        "color": [
+            196,
+            173,
+            176
+        ],
+        "hex_color": "#C4ADB0",
+        "object_name": [
+            "barrelsand_f",
+            "barrelwater_f",
+            "garbagebarrel_01_f",
+            "metalbarrel_empty_f",
+            "metalbarrel_f"
+        ]
+    },
+    "barrier": {
+        "color": [
+            99,
+            13,
+            103
+        ],
+        "hex_color": "#630D67",
+        "object_name": [
+            "cncbarrier_f",
+            "hbarrier_1_f",
+            "hbarrier_5_f"
+        ]
+    },
+    "basket": {
+        "color": [
+            250,
+            143,
+            228
+        ],
+        "hex_color": "#FA8FE4",
+        "object_name": [
+            "basket_f"
+        ]
+    },
+    "belltower": {
+        "color": [
+            159,
+            37,
+            91
+        ],
+        "hex_color": "#9F255B",
+        "object_name": [
+            "belltower_02_v1_f"
+        ]
+    },
+    "bench": {
+        "color": [
+            35,
+            132,
+            234
+        ],
+        "hex_color": "#2384EA",
+        "object_name": [
+            "bench_01_f",
+            "bench_02_f",
+            "bench_f"
+        ]
+    },
+    "bricks": {
+        "color": [
+            118,
+            149,
+            223
+        ],
+        "hex_color": "#7695DF",
+        "object_name": [
+            "bricks_v1_f",
+            "bricks_v2_f",
+            "bricks_v3_f",
+            "bricks_v4_f"
+        ]
+    },
+    "bucket": {
+        "color": [
+            166,
+            38,
+            54
+        ],
+        "hex_color": "#A62636",
+        "object_name": [
+            "bucket_f"
+        ]
+    },
+    "cages": {
+        "color": [
+            87,
+            153,
+            107
+        ],
+        "hex_color": "#57996B",
+        "object_name": [
+            "cages_f"
+        ]
+    },
+    "camping chair": {
+        "color": [
+            116,
+            122,
+            10
+        ],
+        "hex_color": "#747A0A",
+        "object_name": [
+            "campingchair_v1_folded_f"
+        ]
+    },
+    "canister": {
+        "color": [
+            42,
+            217,
+            125
+        ],
+        "hex_color": "#2AD97D",
+        "object_name": [
+            "canisterplastic_f"
+        ]
+    },
+    "cargo tower": {
+        "color": [
+            249,
+            140,
+            186
+        ],
+        "hex_color": "#F98CBA",
+        "object_name": [
+            "cargo_tower_v1_f"
+        ]
+    },
+    "carousel": {
+        "color": [
+            204,
+            203,
+            113
+        ],
+        "hex_color": "#CCCB71",
+        "object_name": [
+            "carousel_01_f"
+        ]
+    },
+    "cart": {
+        "color": [
+            15,
+            121,
+            37
+        ],
+        "hex_color": "#0F7925",
+        "object_name": [
+            "wheelcart_f",
+            "woodencart_f"
+        ]
+    },
+    "cash register": {
+        "color": [
+            23,
+            64,
+            95
+        ],
+        "hex_color": "#17405F",
+        "object_name": [
+            "fs_feed_f"
+        ]
+    },
+    "chair": {
+        "color": [
+            88,
+            106,
+            118
+        ],
+        "hex_color": "#586A76",
+        "object_name": [
+            "chairplastic_f"
+        ]
+    },
+    "chapel": {
+        "color": [
+            155,
+            40,
+            88
+        ],
+        "hex_color": "#9B2858",
+        "object_name": [
+            "chapel_v1_f"
+        ]
+    },
+    "cinderblocks": {
+        "color": [
+            152,
+            83,
+            184
+        ],
+        "hex_color": "#9853B8",
+        "object_name": [
+            "cinderblocks_f"
+        ]
+    },
+    "container": {
+        "color": [
+            255,
+            9,
+            185
+        ],
+        "hex_color": "#FF09B9",
+        "object_name": [
+            "cargo20_sand_f"
+        ]
+    },
+    "crate": {
+        "color": [
+            70,
+            115,
+            255
+        ],
+        "hex_color": "#4673FF",
+        "object_name": [
+            "cratesplastic_f",
+            "cratesshabby_f",
+            "crateswooden_f"
+        ]
+    },
+    "dam": {
+        "color": [
+            179,
+            126,
+            235
+        ],
+        "hex_color": "#B37EEB",
+        "object_name": [
+            "shop_02_dam_proxy1_f",
+            "shop_02_dam_proxy2_f"
+        ]
+    },
+    "fence": {
+        "color": [
+            23,
+            236,
+            69
+        ],
+        "hex_color": "#17EC45",
+        "object_name": [
+            "pipe_fence_4m_f",
+            "sportground_fence_f",
+            "wired_fence_4m_f",
+            "wired_fence_8m_f"
+        ]
+    },
+    "gas station": {
+        "color": [
+            82,
+            184,
+            14
+        ],
+        "hex_color": "#52B80E",
+        "object_name": [
+            "fs_roof_f"
+        ]
+    },
+    "goal": {
+        "color": [
+            71,
+            5,
+            250
+        ],
+        "hex_color": "#4705FA",
+        "object_name": [
+            "goal_f"
+        ]
+    },
+    "house": {
+        "color": [
+            192,
+            124,
+            9
+        ],
+        "hex_color": "#C07C09",
+        "object_name": [
+            "carservice_f",
+            "i_addon_03_v1_f",
+            "i_addon_03mid_v1_f",
+            "i_garage_v1_f",
+            "i_garage_v2_f",
+            "i_house_big_01_v2_f",
+            "i_house_big_01_v3_f",
+            "i_house_big_02_v3_f",
+            "i_house_small_01_v2_f",
+            "i_house_small_02_v1_f",
+            "i_house_small_02_v2_f",
+            "i_shed_ind_f",
+            "i_shop_01_v2_f",
+            "i_shop_02_v2_f",
+            "i_stone_housebig_v2_f",
+            "i_stone_housebig_v3_f",
+            "i_stone_housesmall_v1_f",
+            "i_stone_housesmall_v3_f",
+            "i_stone_shed_v1_f",
+            "i_stone_shed_v2_f",
+            "i_stone_shed_v3_f",
+            "metal_shed_f",
+            "slum_house01_f",
+            "slum_house02_f",
+            "slum_house03_f",
+            "u_addon_02_v1_f",
+            "u_house_big_01_v1_f",
+            "u_house_big_02_v1_f",
+            "u_house_small_01_v1_f",
+            "u_house_small_02_v1_f",
+            "unfinished_building_01_f",
+            "water_source_f"
+        ]
+    },
+    "housed": {
+        "color": [
+            72,
+            96,
+            213
+        ],
+        "hex_color": "#4860D5",
+        "object_name": [
+            "i_house_small_01_v3_f"
+        ]
+    },
+    "iron pipe": {
+        "color": [
+            18,
+            172,
+            117
+        ],
+        "hex_color": "#12AC75",
+        "object_name": [
+            "ironpipes_f"
+        ]
+    },
+    "kestrel": {
+        "color": [
+            7,
+            223,
+            195
+        ],
+        "hex_color": "#07DFC3",
+        "object_name": [
+            "kestrel_f"
+        ]
+    },
+    "kiosk": {
+        "color": [
+            28,
+            47,
+            66
+        ],
+        "hex_color": "#1C2F42",
+        "object_name": [
+            "kiosk_blueking_f",
+            "kiosk_gyros_f"
+        ]
+    },
+    "lamp": {
+        "color": [
+            175,
+            15,
+            255
+        ],
+        "hex_color": "#AF0FFF",
+        "object_name": [
+            "lampdecor_f",
+            "lampdecor_off_f",
+            "lamphalogen_f",
+            "lamphalogen_off_f",
+            "lampshabby_f",
+            "lampshabby_off_f",
+            "lampstreet_small_f",
+            "lampstreet_small_off_f"
+        ]
+    },
+    "obelisk": {
+        "color": [
+            209,
+            74,
+            161
+        ],
+        "hex_color": "#D14AA1",
+        "object_name": [
+            "grave_obelisk_f"
+        ]
+    },
+    "pallet": {
+        "color": [
+            195,
+            125,
+            79
+        ],
+        "hex_color": "#C37D4F",
+        "object_name": [
+            "pallet_vertical_f",
+            "pallets_f"
+        ]
+    },
+    "parasol": {
+        "color": [
+            58,
+            211,
+            102
+        ],
+        "hex_color": "#3AD366",
+        "object_name": [
+            "sunshade_02_f"
+        ]
+    },
+    "pavement": {
+        "color": [
+            30,
+            129,
+            111
+        ],
+        "hex_color": "#1E816F",
+        "object_name": [
+            "pavement_narrow_corner_f",
+            "pavement_narrow_f",
+            "pavement_wide_corner_f",
+            "pavement_wide_f"
+        ]
+    },
+    "phone booth": {
+        "color": [
+            203,
+            75,
+            81
+        ],
+        "hex_color": "#CB4B51",
+        "object_name": [
+            "phonebooth_01_f"
+        ]
+    },
+    "pillar": {
+        "color": [
+            18,
+            46,
+            50
+        ],
+        "hex_color": "#122E32",
+        "object_name": [
+            "city_pillar_f"
+        ]
+    },
+    "pipe": {
+        "color": [
+            119,
+            67,
+            27
+        ],
+        "hex_color": "#77431B",
+        "object_name": [
+            "pipes_large_f",
+            "pipes_small_f"
+        ]
+    },
+    "pole": {
+        "color": [
+            203,
+            33,
+            140
+        ],
+        "hex_color": "#CB218C",
+        "object_name": [
+            "wall_tin_pole"
+        ]
+    },
+    "power pole": {
+        "color": [
+            74,
+            192,
+            41
+        ],
+        "hex_color": "#4AC029",
+        "object_name": [
+            "powerpolewooden_f",
+            "powerpolewooden_l_f",
+            "powerpolewooden_l_off_f",
+            "powerpolewooden_small_f"
+        ]
+    },
+    "ruined house": {
+        "color": [
+            242,
+            219,
+            10
+        ],
+        "hex_color": "#F2DB0A",
+        "object_name": [
+            "d_house_big_02_v1_f",
+            "d_shop_02_v1_f"
+        ]
+    },
+    "ruined vehicle": {
+        "color": [
+            97,
+            102,
+            55
+        ],
+        "hex_color": "#616637",
+        "object_name": [
+            "wreck_car2_f"
+        ]
+    },
+    "sack": {
+        "color": [
+            168,
+            141,
+            120
+        ],
+        "hex_color": "#A88D78",
+        "object_name": [
+            "sack_f",
+            "sacks_goods_f",
+            "sacks_heap_f"
+        ]
+    },
+    "signage": {
+        "color": [
+            172,
+            62,
+            119
+        ],
+        "hex_color": "#AC3E77",
+        "object_name": [
+            "fs_price_f",
+            "fs_sign_f",
+            "signc_05_1",
+            "signc_05_2",
+            "signc_05_3",
+            "signs_syrta_end",
+            "signs_syrta_start",
+            "signt_commandeddirectionforward",
+            "signt_dangerbendr",
+            "signt_deadend",
+            "signt_infofirstaid",
+            "signt_infohotel",
+            "signt_infopetrolstation",
+            "signt_inforestaurant",
+            "signt_infotaxirank",
+            "signt_junctionrow",
+            "signt_noparking",
+            "signt_nopassage",
+            "signt_sharpbendleft",
+            "signt_speedlimit30",
+            "signt_stop"
+        ]
+    },
+    "stone": {
+        "color": [
+            53,
+            163,
+            100
+        ],
+        "hex_color": "#35A364",
+        "object_name": [
+            "stone_small_f"
+        ]
+    },
+    "stone heap": {
+        "color": [
+            186,
+            37,
+            143
+        ],
+        "hex_color": "#BA258F",
+        "object_name": [
+            "mound01_8m_f",
+            "mound02_8m_f"
+        ]
+    },
+    "table": {
+        "color": [
+            215,
+            149,
+            135
+        ],
+        "hex_color": "#D79587",
+        "object_name": [
+            "campingtable_f",
+            "campingtable_small_f",
+            "tableplastic_01_f"
+        ]
+    },
+    "tank": {
+        "color": [
+            224,
+            86,
+            186
+        ],
+        "hex_color": "#E056BA",
+        "object_name": [
+            "tank_rust_f"
+        ]
+    },
+    "toilet": {
+        "color": [
+            187,
+            78,
+            9
+        ],
+        "hex_color": "#BB4E09",
+        "object_name": [
+            "toiletbox_f"
+        ]
+    },
+    "trash": {
+        "color": [
+            174,
+            100,
+            100
+        ],
+        "hex_color": "#AE6464",
+        "object_name": [
+            "garbagebags_f",
+            "junkpile_f"
+        ]
+    },
+    "trash can": {
+        "color": [
+            120,
+            82,
+            212
+        ],
+        "hex_color": "#7852D4",
+        "object_name": [
+            "garbagebin_01_f",
+            "garbagecontainer_closed_f",
+            "garbagecontainer_open_f",
+            "garbagewashingmachine_f"
+        ]
+    },
+    "tree": {
+        "color": [
+            229,
+            161,
+            3
+        ],
+        "hex_color": "#E5A103",
+        "object_name": [
+            "b_ficusc1s_f",
+            "b_ficusc2d_f",
+            "b_ficusc2s_f",
+            "b_neriumo2d_f",
+            "b_neriumo2s_white_f",
+            "t_broussonetiap1s_f",
+            "t_ficusb1s_f",
+            "t_ficusb2s_f",
+            "t_fraxinusav2s_f",
+            "t_oleae1s_f",
+            "t_oleae2s_f",
+            "t_pinuss2s_f",
+            "t_quercusir2s_f"
+        ]
+    },
+    "tree bin": {
+        "color": [
+            41,
+            40,
+            39
+        ],
+        "hex_color": "#292827",
+        "object_name": [
+            "treebin_f"
+        ]
+    },
+    "tyre": {
+        "color": [
+            190,
+            144,
+            126
+        ],
+        "hex_color": "#BE907E",
+        "object_name": [
+            "tyre_f",
+            "tyres_f"
+        ]
+    },
+    "vessels": {
+        "color": [
+            109,
+            87,
+            155
+        ],
+        "hex_color": "#6D579B",
+        "object_name": [
+            "waterbarrel_f",
+            "watertank_f"
+        ]
+    },
+    "wall": {
+        "color": [
+            95,
+            238,
+            181
+        ],
+        "hex_color": "#5FEEB5",
+        "object_name": [
+            "canal_wallsmall_10m_f",
+            "city2_4m_f",
+            "city2_8m_f",
+            "city2_8md_f",
+            "city_4m_f",
+            "city_8m_f",
+            "concrete_smallwall_4m_f",
+            "concrete_smallwall_8m_f",
+            "mil_wallbig_4m_f",
+            "mil_wallbig_corner_f",
+            "stone_4m_f",
+            "stone_8m_f",
+            "stone_8md_f",
+            "stone_gate_f",
+            "stone_pillar_f",
+            "wall_tin_4_2"
+        ]
+    },
+    "wooden bench": {
+        "color": [
+            255,
+            70,
+            238
+        ],
+        "hex_color": "#FF46EE",
+        "object_name": [
+            "workstand_f"
+        ]
+    },
+    "wooden box": {
+        "color": [
+            237,
+            225,
+            234
+        ],
+        "hex_color": "#EDE1EA",
+        "object_name": [
+            "woodenbox_f"
+        ]
+    }
+}
